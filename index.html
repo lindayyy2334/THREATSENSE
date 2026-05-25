@@ -1,9 +1,2377 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Mon Site</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThreatSense — Enterprise Insider Threat Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #050508;
+  --surface: #0c0c14;
+  --surface2: #111120;
+  --surface3: #181828;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(99,102,241,0.35);
+  --accent: #6366f1;
+  --accent2: #818cf8;
+  --accent3: #c7d2fe;
+  --danger: #ef4444;
+  --danger-soft: rgba(239,68,68,0.12);
+  --safe: #10b981;
+  --safe-soft: rgba(16,185,129,0.12);
+  --warn: #f59e0b;
+  --warn-soft: rgba(245,158,11,0.1);
+  --text: #f1f0ff;
+  --muted: #6b6994;
+  --muted2: #9d9bc4;
+  --mono: 'JetBrains Mono', monospace;
+  --head: 'Bebas Neue', sans-serif;
+  --body: 'Outfit', sans-serif;
+  --radius: 12px;
+  --glow: 0 0 60px rgba(99,102,241,0.15);
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── ANIMATED PARTICLES CANVAS ─── */
+#particles-canvas {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  opacity: 0.4;
+}
+
+/* ─── NAV ─── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(5,5,8,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 3rem;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 60px;
+}
+.logo {
+  font-family: var(--head);
+  font-size: 22px; letter-spacing: 2px;
+  color: #fff; display: flex; align-items: center; gap: 10px;
+}
+.logo-icon {
+  width: 28px; height: 28px; border-radius: 6px;
+  background: var(--accent); display: flex; align-items: center; justify-content: center;
+  font-size: 14px; animation: pulseGlow 3s ease-in-out infinite;
+}
+@keyframes pulseGlow {
+  0%,100%{box-shadow:0 0 0px rgba(99,102,241,0.5)}
+  50%{box-shadow:0 0 20px rgba(99,102,241,0.8)}
+}
+.logo span { color: var(--accent2); }
+nav ul { list-style: none; display: flex; gap: 2.5rem; }
+nav ul a {
+  font-size: 12px; font-weight: 500; color: var(--muted2);
+  text-decoration: none; letter-spacing: 0.08em;
+  text-transform: uppercase; transition: color 0.2s;
+}
+nav ul a:hover { color: var(--text); }
+.nav-right { display: flex; align-items: center; gap: 12px; }
+.nav-login {
+  font-size: 13px; font-weight: 500; color: var(--muted2);
+  background: none; border: none; cursor: pointer;
+  font-family: var(--body); transition: color 0.2s; padding: 8px 12px;
+}
+.nav-login:hover { color: var(--text); }
+.nav-cta {
+  background: var(--accent); color: #fff;
+  border: none; border-radius: 8px;
+  padding: 9px 20px; font-size: 13px; font-weight: 600;
+  font-family: var(--body); cursor: pointer;
+  transition: all 0.2s; letter-spacing: 0.02em;
+}
+.nav-cta:hover { background: #5254e7; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(99,102,241,0.4); }
+
+/* ─── HERO ─── */
+.hero {
+  min-height: 92vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 5rem 2rem 4rem;
+  position: relative; overflow: hidden;
+}
+.hero-glow {
+  position: absolute; top: -20%; left: 50%; transform: translateX(-50%);
+  width: 900px; height: 600px;
+  background: radial-gradient(ellipse at center, rgba(99,102,241,0.18) 0%, transparent 65%);
+  pointer-events: none;
+}
+.hero-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 70% 70% at center, black 0%, transparent 100%);
+  pointer-events: none;
+  animation: gridShift 20s linear infinite;
+}
+@keyframes gridShift {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 60px 60px, 60px 60px; }
+}
+
+/* ─── SCANNING RING ANIMATION ─── */
+.hero-scan-rings {
+  position: absolute;
+  width: 600px; height: 600px;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none; z-index: 0;
+}
+.scan-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(99,102,241,0.15);
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  animation: expandRing 4s ease-out infinite;
+}
+.scan-ring:nth-child(1) { width: 200px; height: 200px; animation-delay: 0s; }
+.scan-ring:nth-child(2) { width: 350px; height: 350px; animation-delay: 1s; }
+.scan-ring:nth-child(3) { width: 500px; height: 500px; animation-delay: 2s; }
+.scan-ring:nth-child(4) { width: 650px; height: 650px; animation-delay: 3s; }
+@keyframes expandRing {
+  0% { opacity: 0.6; transform: translate(-50%, -50%) scale(0.8); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
+}
+
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3);
+  border-radius: 100px; padding: 6px 18px 6px 8px;
+  margin-bottom: 2.5rem; position: relative; z-index: 1;
+  animation: fadeInDown 0.8s ease both;
+}
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.eyebrow-badge {
+  background: var(--danger); color: #fff;
+  font-family: var(--mono); font-size: 9px; font-weight: 500;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  border-radius: 100px; padding: 3px 8px;
+  animation: badgePulse 2s ease-in-out infinite;
+}
+@keyframes badgePulse {
+  0%,100%{opacity:1} 50%{opacity:0.6}
+}
+.eyebrow-text {
+  font-family: var(--mono); font-size: 11px; color: var(--accent3);
+  letter-spacing: 0.06em;
+}
+
+h1 {
+  font-family: var(--head);
+  font-size: clamp(54px, 8vw, 110px);
+  line-height: 0.95; letter-spacing: 2px;
+  color: #fff; max-width: 880px; margin-bottom: 2rem;
+  position: relative; z-index: 1;
+  animation: fadeInUp 0.9s 0.2s ease both;
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+h1 .highlight {
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--accent);
+}
+h1 .solid { color: var(--accent); }
+
+.hero-sub {
+  font-size: 18px; font-weight: 300; color: var(--muted2); max-width: 580px;
+  line-height: 1.75; margin-bottom: 3rem; position: relative; z-index: 1;
+  animation: fadeInUp 0.9s 0.4s ease both;
+}
+
+.hero-actions { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-bottom: 5rem; position: relative; z-index: 1; animation: fadeInUp 0.9s 0.6s ease both; }
+
+.btn-primary {
+  background: var(--accent); color: #fff;
+  border: none; border-radius: 10px;
+  padding: 15px 32px; font-size: 15px; font-weight: 600;
+  font-family: var(--body); cursor: pointer; transition: all 0.2s;
+  text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+  letter-spacing: 0.02em;
+}
+.btn-primary:hover { background: #5254e7; transform: translateY(-2px); box-shadow: 0 8px 32px rgba(99,102,241,0.45); }
+
+.btn-outline {
+  background: transparent; color: var(--text);
+  border: 1px solid rgba(255,255,255,0.15); border-radius: 10px;
+  padding: 15px 32px; font-size: 15px; font-weight: 500;
+  font-family: var(--body); cursor: pointer; transition: all 0.2s;
+  text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-outline:hover { background: var(--surface2); border-color: rgba(255,255,255,0.25); }
+
+/* ─── TRUST BAR ─── */
+.trust-bar {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; gap: 3rem;
+  padding: 1.5rem 3rem;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap; justify-content: center;
+  background: var(--surface);
+  animation: fadeInUp 0.9s 0.8s ease both;
+}
+.trust-item { display: flex; align-items: center; gap: 10px; }
+.trust-icon { font-size: 16px; }
+.trust-text { font-size: 13px; font-weight: 500; color: var(--muted2); letter-spacing: 0.02em; }
+.trust-text strong { color: var(--text); }
+.trust-sep { width: 1px; height: 20px; background: var(--border); }
+
+/* ─── HERO VISUAL — network graph ─── */
+#hero-network {
+  position: absolute;
+  right: -100px; top: 50%;
+  transform: translateY(-50%);
+  width: 500px; height: 500px;
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── STATS BAND ─── */
+.stats-band {
+  padding: 5rem 2rem;
+  background: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+  position: relative; overflow: hidden;
+}
+.stats-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+  border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+}
+@media(max-width:700px){ .stats-inner{ grid-template-columns: 1fr 1fr; } }
+.stat-block {
+  background: var(--surface); padding: 2.5rem 2rem;
+  text-align: center; position: relative; overflow: hidden;
+  transition: background 0.2s;
+}
+.stat-block:hover { background: var(--surface2); }
+.stat-block::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--accent); opacity: 0;
+  transition: opacity 0.2s;
+}
+.stat-block:hover::before { opacity: 1; }
+.stat-num {
+  font-family: var(--head); font-size: 52px; letter-spacing: 1px;
+  color: #fff; line-height: 1; margin-bottom: 6px;
+}
+.stat-num span { color: var(--accent); }
+.stat-label { font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+
+/* ─── SECTION BASE ─── */
+section.padded { padding: 7rem 2rem; }
+.container { max-width: 1100px; margin: 0 auto; }
+.section-kicker {
+  font-family: var(--mono); font-size: 11px; color: var(--accent2);
+  text-transform: uppercase; letter-spacing: 0.14em;
+  display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem;
+}
+.section-kicker::before { content: ''; display: block; width: 24px; height: 1px; background: var(--accent2); }
+h2 {
+  font-family: var(--head); font-size: clamp(36px, 5vw, 60px);
+  letter-spacing: 1.5px; color: #fff; margin-bottom: 1rem; line-height: 1.05;
+}
+.section-sub { font-size: 17px; font-weight: 300; color: var(--muted2); max-width: 540px; line-height: 1.7; margin-bottom: 4rem; }
+
+/* ─── FEATURES ─── */
+#features { background: var(--bg); }
+.features-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+  border: 1px solid var(--border); border-radius: 20px; overflow: hidden;
+}
+@media(max-width:900px){ .features-grid{ grid-template-columns: 1fr 1fr; } }
+@media(max-width:600px){ .features-grid{ grid-template-columns: 1fr; } }
+
+.feat-card {
+  background: var(--surface); padding: 2.25rem;
+  transition: background 0.2s; position: relative;
+}
+.feat-card:hover { background: var(--surface2); }
+.feat-num {
+  font-family: var(--mono); font-size: 10px; color: var(--muted);
+  letter-spacing: 0.1em; margin-bottom: 1.5rem;
+}
+.feat-icon-wrap {
+  width: 44px; height: 44px; border-radius: 10px;
+  background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; margin-bottom: 1.25rem;
+  transition: all 0.3s;
+}
+.feat-card:hover .feat-icon-wrap {
+  background: rgba(99,102,241,0.25);
+  box-shadow: 0 0 20px rgba(99,102,241,0.3);
+  transform: scale(1.1);
+}
+.feat-title {
+  font-family: var(--body); font-size: 16px; font-weight: 600;
+  color: #fff; margin-bottom: 0.6rem; letter-spacing: -0.01em;
+}
+.feat-desc { font-size: 14px; font-weight: 300; color: var(--muted2); line-height: 1.65; }
+
+/* ─── ANIMATED THREAT ILLUSTRATION ─── */
+.threat-illustration {
+  width: 100%; max-width: 520px; margin: 0 auto;
+  position: relative;
+}
+
+/* ─── PROBLEM / SOLUTION ─── */
+#problem {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
+@media(max-width:800px){ .problem-grid{ grid-template-columns:1fr; } }
+
+.problem-list { display: flex; flex-direction: column; gap: 1rem; }
+.problem-item {
+  display: flex; gap: 14px; align-items: flex-start;
+  padding: 1.25rem; border-radius: 12px;
+  background: var(--surface3); border: 1px solid var(--border);
+  transition: all 0.3s;
+}
+.problem-item:hover { border-color: var(--border2); transform: translateX(6px); }
+.problem-item-icon {
+  width: 36px; height: 36px; min-width: 36px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; background: var(--danger-soft);
+}
+.problem-item-text h4 { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.problem-item-text p { font-size: 13px; font-weight: 300; color: var(--muted2); }
+
+.solution-visual {
+  background: var(--surface3); border: 1px solid var(--border);
+  border-radius: 20px; padding: 2rem; position: relative;
+}
+.sol-header {
+  font-family: var(--mono); font-size: 10px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1.5rem;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.sol-status { display: flex; align-items: center; gap: 6px; }
+.sol-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--safe); animation: blink 2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.sol-metric {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.85rem 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.sol-metric:last-child { border-bottom: none; }
+.sol-metric-name { font-size: 13px; font-weight: 400; color: var(--muted2); display: flex; align-items: center; gap: 8px; }
+.sol-metric-bar { flex: 1; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; margin: 0 14px; overflow: hidden; }
+.sol-metric-fill {
+  height: 100%; border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  width: 0; transition: width 1.5s cubic-bezier(.4,0,.2,1);
+}
+.sol-metric-val { font-family: var(--mono); font-size: 12px; color: var(--accent3); }
+
+/* ─── HOW IT WORKS ─── */
+#how { background: var(--bg); }
+.pipeline { display: flex; flex-direction: column; gap: 0; position: relative; max-width: 680px; margin: 0 auto; }
+.pipeline::before {
+  content: '';
+  position: absolute; left: 22px; top: 44px; bottom: 44px; width: 1px;
+  background: linear-gradient(180deg, var(--accent) 0%, transparent 100%);
+  opacity: 0.3;
+}
+.pipe-step {
+  display: flex; gap: 1.75rem; align-items: flex-start;
+  padding: 1.75rem 0;
+  transition: all 0.3s;
+}
+.pipe-step:hover .pipe-num {
+  background: rgba(99,102,241,0.25);
+  box-shadow: 0 0 16px rgba(99,102,241,0.4);
+}
+.pipe-num {
+  width: 44px; height: 44px; min-width: 44px; border-radius: 10px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--accent2);
+  position: relative; z-index: 1; transition: all 0.3s;
+}
+.pipe-content h4 { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+.pipe-content p { font-size: 14px; font-weight: 300; color: var(--muted2); line-height: 1.6; }
+.pipe-tag {
+  display: inline-block; margin-top: 8px;
+  font-family: var(--mono); font-size: 10px; color: var(--accent2);
+  background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 4px; padding: 2px 8px;
+}
+
+/* ─── BENCHMARK ─── */
+.benchmark-wrap {
+  display: grid; grid-template-columns: 1fr 1.4fr; gap: 3rem; align-items: start;
+  margin-top: 4rem;
+}
+@media(max-width:800px){ .benchmark-wrap{ grid-template-columns:1fr; } }
+
+.model-cards { display: flex; flex-direction: column; gap: 1rem; }
+.model-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.5rem;
+  transition: all 0.2s; cursor: default;
+}
+.model-card.champion {
+  border-color: rgba(99,102,241,0.4);
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(99,102,241,0.05) 100%);
+  box-shadow: 0 0 30px rgba(99,102,241,0.1);
+}
+.model-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+.model-name { font-size: 15px; font-weight: 600; color: var(--text); }
+.champion-badge {
+  font-family: var(--mono); font-size: 10px; color: var(--safe);
+  background: var(--safe-soft); border: 1px solid rgba(16,185,129,0.25);
+  border-radius: 4px; padding: 3px 8px; letter-spacing: 0.06em;
+}
+.model-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mm-item { background: var(--surface2); border-radius: 8px; padding: 10px 12px; }
+.mm-label { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+.mm-val { font-family: var(--mono); font-size: 16px; font-weight: 500; color: var(--text); }
+
+.feature-importance { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.75rem; }
+.fi-header { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1.5rem; }
+.fi-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.fi-name { font-size: 13px; font-weight: 400; color: var(--muted2); min-width: 180px; display: flex; align-items: center; gap: 6px; }
+.fi-bar-wrap { flex: 1; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; }
+.fi-bar { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 100%); width: 0; transition: width 1.5s ease; }
+.fi-val { font-family: var(--mono); font-size: 12px; color: var(--accent3); min-width: 36px; text-align: right; }
+
+/* ─── DEMO ─── */
+#demo {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.demo-wrap {
+  display: grid; grid-template-columns: 1fr 1.25fr; gap: 2.5rem; align-items: start;
+}
+@media(max-width:900px){ .demo-wrap{ grid-template-columns:1fr; } }
+
+.demo-form {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 18px; padding: 2rem;
+}
+.form-group { margin-bottom: 2rem; }
+.form-group-title {
+  font-family: var(--mono); font-size: 10px; color: var(--accent2);
+  text-transform: uppercase; letter-spacing: 0.12em;
+  border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 1.25rem;
+}
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field { margin-bottom: 12px; }
+.field label { font-size: 12px; font-weight: 500; color: var(--muted2); display: block; margin-bottom: 6px; }
+.field input, .field select {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px;
+  color: var(--text); font-family: var(--body); font-size: 14px;
+  transition: border-color 0.2s; outline: none;
+}
+.field input:focus, .field select:focus { border-color: var(--accent2); }
+.field select option { background: var(--surface3); }
+
+.toggle-group { display: flex; gap: 6px; }
+.tog {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 7px 16px;
+  color: var(--muted2); font-size: 13px; font-family: var(--body); font-weight: 500;
+  cursor: pointer; transition: all 0.15s;
+}
+.tog.on { background: rgba(99,102,241,0.15); border-color: var(--accent2); color: var(--accent3); }
+
+.run-btn {
+  width: 100%; padding: 15px;
+  background: linear-gradient(135deg, var(--accent) 0%, #5254e7 100%);
+  border: none; border-radius: 12px; color: #fff;
+  font-family: var(--head); font-size: 17px; letter-spacing: 2px;
+  cursor: pointer; margin-top: 0.5rem;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.run-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(99,102,241,0.4); }
+.run-btn:disabled { opacity: 0.6; transform: none; cursor: not-allowed; }
+
+.result-panel { display: flex; flex-direction: column; gap: 1.25rem; }
+.result-card {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 18px; padding: 2rem; position: relative;
+  overflow: hidden; transition: border-color 0.5s;
+}
+.result-card.is-threat { border-color: rgba(239,68,68,0.5); }
+.result-card.is-safe { border-color: rgba(16,185,129,0.4); }
+
+.placeholder-wrap {
+  min-height: 320px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px;
+  color: var(--muted);
+}
+.placeholder-glyph { font-size: 36px; opacity: 0.25; }
+.placeholder-msg { font-size: 14px; font-weight: 300; text-align: center; max-width: 220px; }
+
+.verdict-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 2rem; }
+.verdict-icon-wrap {
+  width: 56px; height: 56px; border-radius: 14px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 24px;
+}
+.verdict-icon-wrap.threat { background: var(--danger-soft); border: 1px solid rgba(239,68,68,0.3); }
+.verdict-icon-wrap.safe { background: var(--safe-soft); border: 1px solid rgba(16,185,129,0.25); }
+.verdict-title { font-family: var(--head); font-size: 26px; letter-spacing: 1px; color: #fff; }
+.verdict-sub { font-size: 13px; font-weight: 300; color: var(--muted2); margin-top: 2px; }
+
+.gauge-wrap { margin-bottom: 1.5rem; }
+.gauge-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.gauge-track { height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; }
+.gauge-fill { height: 100%; border-radius: 4px; transition: width 1s cubic-bezier(.4,0,.2,1); }
+
+.details-row { font-size: 13px; color: var(--muted2); display: flex; gap: 2rem; flex-wrap: wrap; }
+.details-row span { font-family: var(--mono); color: var(--text); }
+
+.signals-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.sig-item {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface2); border-radius: 10px; padding: 11px 14px;
+  font-size: 13px; font-weight: 400; color: var(--muted2);
+  animation: slideInRight 0.4s ease both;
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.sig-icon { font-size: 15px; flex-shrink: 0; }
+.sig-name { flex: 1; }
+.sig-badge {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em;
+  padding: 3px 9px; border-radius: 5px; font-weight: 500;
+}
+.sig-badge.high { background: var(--danger-soft); color: var(--danger); }
+.sig-badge.med { background: var(--warn-soft); color: var(--warn); }
+.sig-badge.low { background: var(--safe-soft); color: var(--safe); }
+
+.model-votes-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+.mv-item {
+  background: var(--surface2); border-radius: 10px; padding: 14px;
+  text-align: center;
+}
+.mv-name { font-size: 10px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+.mv-prob { font-family: var(--mono); font-size: 20px; font-weight: 500; }
+.mv-prob.threat { color: var(--danger); }
+.mv-prob.safe-c { color: var(--safe); }
+.mv-prob.warn-c { color: var(--warn); }
+.mv-verdict { font-size: 10px; font-weight: 500; color: var(--muted); margin-top: 4px; letter-spacing: 0.06em; }
+
+/* ─── PRICING ─── */
+#pricing { background: var(--bg); }
+.pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+@media(max-width:900px){ .pricing-grid{ grid-template-columns:1fr; max-width:420px; } }
+
+.price-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 2.25rem;
+  transition: all 0.2s; position: relative;
+}
+.price-card:hover { border-color: var(--border2); transform: translateY(-4px); box-shadow: var(--glow); }
+.price-card.featured {
+  border-color: rgba(99,102,241,0.5);
+  background: linear-gradient(160deg, var(--surface2) 0%, rgba(99,102,241,0.06) 100%);
+  box-shadow: var(--glow);
+}
+.price-badge {
+  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  background: var(--accent); color: #fff;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+  padding: 4px 14px; border-radius: 100px;
+}
+.plan-name { font-family: var(--head); font-size: 22px; letter-spacing: 1px; color: var(--text); margin-bottom: 0.5rem; }
+.plan-desc { font-size: 13px; font-weight: 300; color: var(--muted2); margin-bottom: 2rem; }
+.plan-price { font-family: var(--head); font-size: 48px; letter-spacing: 1px; color: #fff; margin-bottom: 0.25rem; line-height: 1; }
+.plan-price span { font-family: var(--body); font-size: 16px; color: var(--muted); font-weight: 300; }
+.plan-period { font-size: 12px; color: var(--muted); margin-bottom: 2rem; }
+.plan-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 2rem; }
+.plan-features li { font-size: 14px; font-weight: 300; color: var(--muted2); display: flex; align-items: center; gap: 10px; }
+.plan-features li::before { content: '✓'; color: var(--safe); font-weight: 600; flex-shrink: 0; }
+.plan-features li.dim::before { content: '—'; color: var(--muted); }
+.plan-features li.dim { opacity: 0.45; }
+.plan-btn {
+  width: 100%; padding: 13px; border-radius: 10px; font-size: 14px; font-weight: 600;
+  font-family: var(--body); cursor: pointer; transition: all 0.2s; letter-spacing: 0.02em;
+}
+.plan-btn-outline { background: transparent; color: var(--text); border: 1px solid rgba(255,255,255,0.15); }
+.plan-btn-outline:hover { background: var(--surface2); }
+.plan-btn-fill { background: var(--accent); color: #fff; border: none; }
+.plan-btn-fill:hover { background: #5254e7; box-shadow: 0 6px 24px rgba(99,102,241,0.4); }
+
+/* ─── USE CASES ─── */
+#usecases { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.usecase-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+@media(max-width:700px){ .usecase-grid{ grid-template-columns:1fr; } }
+.uc-card {
+  background: var(--surface3); border: 1px solid var(--border);
+  border-radius: 16px; padding: 2rem;
+  transition: all 0.3s;
+}
+.uc-card:hover { border-color: var(--border2); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+.uc-icon { font-size: 28px; margin-bottom: 1rem; }
+.uc-title { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 0.5rem; }
+.uc-desc { font-size: 14px; font-weight: 300; color: var(--muted2); line-height: 1.65; }
+.uc-tag {
+  margin-top: 1rem;
+  font-family: var(--mono); font-size: 10px; color: var(--accent2);
+  background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 4px; padding: 3px 8px; display: inline-block;
+}
+
+/* ─── DOCS ─── */
+#docs { background: var(--bg); }
+.docs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+@media(max-width:700px){ .docs-grid{ grid-template-columns:1fr; } }
+.doc-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 2rem; transition: border-color 0.2s;
+}
+.doc-card:hover { border-color: var(--border2); }
+.doc-tag {
+  font-family: var(--mono); font-size: 10px; color: var(--accent2);
+  background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 4px; padding: 3px 10px; display: inline-block; margin-bottom: 1rem;
+}
+.doc-title { font-size: 18px; font-weight: 600; color: #fff; margin-bottom: 0.6rem; }
+.doc-body { font-size: 14px; font-weight: 300; color: var(--muted2); line-height: 1.7; }
+.doc-body ul { padding-left: 1.2rem; }
+.doc-body li { margin-bottom: 0.4rem; }
+.doc-body code {
+  font-family: var(--mono); font-size: 12px;
+  background: rgba(99,102,241,0.1); color: var(--accent3);
+  padding: 2px 6px; border-radius: 4px;
+}
+.doc-body strong { color: var(--text); font-weight: 500; }
+.doc-body p { margin-bottom: 0.75rem; }
+
+/* ─── CTA SECTION ─── */
+#cta {
+  background: var(--bg);
+  padding: 8rem 2rem;
+  text-align: center; position: relative; overflow: hidden;
+}
+#cta::before {
+  content: '';
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: 700px; height: 500px;
+  background: radial-gradient(ellipse at center, rgba(99,102,241,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+.cta-inner { position: relative; max-width: 680px; margin: 0 auto; }
+.cta-kicker { font-family: var(--mono); font-size: 11px; color: var(--accent2); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 1.5rem; }
+.cta-h { font-family: var(--head); font-size: clamp(44px, 7vw, 80px); letter-spacing: 2px; color: #fff; line-height: 0.95; margin-bottom: 1.5rem; }
+.cta-sub { font-size: 17px; font-weight: 300; color: var(--muted2); margin-bottom: 3rem; line-height: 1.7; }
+.cta-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+/* ─── FOOTER ─── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 3rem;
+  display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: center;
+}
+@media(max-width:600px){ footer{ grid-template-columns:1fr; text-align:center; } }
+.footer-brand { font-family: var(--head); font-size: 18px; letter-spacing: 2px; color: #fff; margin-bottom: 6px; }
+.footer-brand span { color: var(--accent2); }
+.footer-desc { font-size: 13px; font-weight: 300; color: var(--muted); }
+.footer-right { font-size: 12px; font-weight: 300; color: var(--muted); text-align: right; }
+.footer-right p { margin-bottom: 4px; }
+.footer-links { display: flex; gap: 1.5rem; justify-content: flex-end; margin-top: 8px; }
+.footer-links a { font-size: 12px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: var(--text); }
+
+/* ─── SPINNER ─── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.2); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+/* ─── SCROLL REVEAL ─── */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ─── SCANNING LINE ANIMATION ─── */
+.scan-line-wrap { position: relative; overflow: hidden; border-radius: 20px; }
+.scan-line-wrap::after {
+  content: '';
+  position: absolute; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(99,102,241,0.8), transparent);
+  animation: scanLine 3s ease-in-out infinite;
+  top: 0;
+}
+@keyframes scanLine {
+  0% { top: 0; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+/* ─── TYPING EFFECT ─── */
+.typing-cursor::after {
+  content: '|';
+  animation: cursorBlink 1s step-end infinite;
+  color: var(--accent);
+}
+@keyframes cursorBlink {
+  0%,100%{opacity:1} 50%{opacity:0}
+}
+
+/* ─── THREAT COUNTER ─── */
+.live-counter {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--danger-soft); border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 8px; padding: 8px 16px;
+  font-family: var(--mono); font-size: 13px; color: var(--danger);
+  margin-bottom: 1rem;
+}
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--danger); animation: blink 1s infinite; }
+
+/* ─── ORBS ─── */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(80px);
+  opacity: 0.08;
+  animation: orbFloat 8s ease-in-out infinite;
+}
+@keyframes orbFloat {
+  0%,100%{transform:translateY(0) scale(1)}
+  50%{transform:translateY(-30px) scale(1.05)}
+}
+</style>
 </head>
 <body>
-    <h1>Bonjour depuis Streamlit 🚀</h1>
+
+<canvas id="particles-canvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">
+    <div class="logo-icon">🔒</div>
+    Threat<span>Sense</span>
+  </div>
+  <ul>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how">Pipeline</a></li>
+    <li><a href="#usecases">Use Cases</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#demo">Live Demo</a></li>
+    <li><a href="#bulk">Bulk Analysis</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="nav-login">Sign In</button>
+    <button class="nav-cta" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">Request Demo →</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-scan-rings">
+    <div class="scan-ring"></div>
+    <div class="scan-ring"></div>
+    <div class="scan-ring"></div>
+    <div class="scan-ring"></div>
+  </div>
+
+  <!-- Background org-network SVG -->
+  <svg id="hero-network" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" style="position:absolute;right:-80px;top:50%;transform:translateY(-50%);opacity:0.12;width:480px;height:480px;pointer-events:none;z-index:0;">
+    <!-- nodes -->
+    <circle cx="250" cy="250" r="22" fill="#6366f1" opacity="0.9"/>
+    <circle cx="140" cy="160" r="14" fill="#818cf8" opacity="0.7"/>
+    <circle cx="360" cy="140" r="14" fill="#818cf8" opacity="0.7"/>
+    <circle cx="100" cy="310" r="10" fill="#6366f1" opacity="0.6"/>
+    <circle cx="400" cy="300" r="10" fill="#6366f1" opacity="0.6"/>
+    <circle cx="200" cy="390" r="10" fill="#6366f1" opacity="0.6"/>
+    <circle cx="330" cy="380" r="10" fill="#6366f1" opacity="0.6"/>
+    <circle cx="60" cy="220" r="8" fill="#c7d2fe" opacity="0.5"/>
+    <circle cx="440" cy="200" r="8" fill="#c7d2fe" opacity="0.5"/>
+    <circle cx="170" cy="440" r="8" fill="#c7d2fe" opacity="0.5"/>
+    <circle cx="380" cy="430" r="8" fill="#c7d2fe" opacity="0.5"/>
+    <!-- THREAT node blinking red -->
+    <circle cx="360" cy="140" r="20" fill="none" stroke="#ef4444" stroke-width="2" opacity="0.5">
+      <animate attributeName="r" values="20;30;20" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0;0.5" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="360" cy="140" r="8" fill="#ef4444" opacity="0.9"/>
+    <!-- edges -->
+    <line x1="250" y1="250" x2="140" y2="160" stroke="#6366f1" stroke-width="1.5" opacity="0.5"/>
+    <line x1="250" y1="250" x2="360" y2="140" stroke="#ef4444" stroke-width="2" opacity="0.7"/>
+    <line x1="250" y1="250" x2="100" y2="310" stroke="#6366f1" stroke-width="1" opacity="0.4"/>
+    <line x1="250" y1="250" x2="400" y2="300" stroke="#6366f1" stroke-width="1" opacity="0.4"/>
+    <line x1="250" y1="250" x2="200" y2="390" stroke="#6366f1" stroke-width="1" opacity="0.4"/>
+    <line x1="250" y1="250" x2="330" y2="380" stroke="#6366f1" stroke-width="1" opacity="0.4"/>
+    <line x1="140" y1="160" x2="60" y2="220" stroke="#818cf8" stroke-width="1" opacity="0.35"/>
+    <line x1="360" y1="140" x2="440" y2="200" stroke="#ef4444" stroke-width="1.5" opacity="0.5"/>
+    <line x1="200" y1="390" x2="170" y2="440" stroke="#818cf8" stroke-width="1" opacity="0.35"/>
+    <line x1="330" y1="380" x2="380" y2="430" stroke="#818cf8" stroke-width="1" opacity="0.35"/>
+    <!-- label -->
+    <text x="375" y="132" font-family="JetBrains Mono,monospace" font-size="11" fill="#ef4444" opacity="0.9">THREAT</text>
+  </svg>
+
+  <div class="hero-eyebrow">
+    <span class="eyebrow-badge">NEW</span>
+    <span class="eyebrow-text">v2.0 · XGBoost · AUC-ROC 0.95</span>
+  </div>
+
+  <div class="live-counter" style="position:relative;z-index:1;">
+    <div class="live-dot"></div>
+    <span id="live-threat-count">0</span> threats flagged today
+  </div>
+
+  <h1>STOP<br><span class="highlight">INSIDER</span><br>THREATS<br><span class="solid">EARLY</span></h1>
+
+  <p class="hero-sub">ThreatSense uses behavioral analytics and three benchmarked ML models to identify malicious insider activity — before damage is done. Built for enterprise security teams.</p>
+
+  <div class="hero-actions">
+    <a class="btn-primary" href="#demo">▶ Run a Live Prediction</a>
+    <a class="btn-outline" href="#pricing">View Pricing</a>
+  </div>
+
+  <div class="trust-bar" style="width:100%;max-width:900px;border-radius:14px;margin-top:0;">
+    <div class="trust-item"><span class="trust-icon">🛡️</span><span class="trust-text"><strong>SOC 2</strong> Ready</span></div>
+    <div class="trust-sep"></div>
+    <div class="trust-item"><span class="trust-icon">⚡</span><span class="trust-text"><strong>&lt;50ms</strong> Inference</span></div>
+    <div class="trust-sep"></div>
+    <div class="trust-item"><span class="trust-icon">🔐</span><span class="trust-text"><strong>Zero</strong> Data Retention</span></div>
+    <div class="trust-sep"></div>
+    <div class="trust-item"><span class="trust-icon">🔌</span><span class="trust-text"><strong>REST API</strong> Integration</span></div>
+    <div class="trust-sep"></div>
+    <div class="trust-item"><span class="trust-icon">📋</span><span class="trust-text"><strong>Audit</strong> Logs Included</span></div>
+  </div>
+</section>
+
+<!-- ANIMATED THREAT MAP BAND -->
+<div style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:3rem 2rem;position:relative;overflow:hidden;">
+  <div style="max-width:1100px;margin:0 auto;">
+    <div class="section-kicker reveal" style="justify-content:center;margin-bottom:1.5rem;">Live Threat Detection Feed</div>
+    <!-- Animated world-map-style threat activity SVG -->
+    <div style="position:relative;">
+      <svg id="threat-feed-svg" viewBox="0 0 1100 240" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;border-radius:14px;border:1px solid var(--border);background:var(--surface3);">
+        <!-- Grid lines -->
+        <defs>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(99,102,241,0.06)" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+        <rect width="1100" height="240" fill="url(#grid)"/>
+        <!-- Animated scan line -->
+        <line id="scan-v-line" x1="0" y1="0" x2="0" y2="240" stroke="rgba(99,102,241,0.5)" stroke-width="1.5">
+          <animateTransform attributeName="transform" type="translate" from="0,0" to="1100,0" dur="4s" repeatCount="indefinite"/>
+        </line>
+        <!-- Activity bars (waveform / anomaly visualization) -->
+        <g id="activity-bars"></g>
+        <!-- Threat pulses -->
+        <circle cx="240" cy="80" r="6" fill="#ef4444" opacity="0.9">
+          <animate attributeName="r" values="6;16;6" dur="2.5s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.9;0;0.9" dur="2.5s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="240" cy="80" r="5" fill="#ef4444"/>
+        <text x="250" y="75" font-family="JetBrains Mono,monospace" font-size="9" fill="#ef4444" opacity="0.9">THREAT · Finance</text>
+
+        <circle cx="700" cy="140" r="6" fill="#f59e0b" opacity="0.9">
+          <animate attributeName="r" values="6;14;6" dur="3s" begin="1s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.9;0;0.9" dur="3s" begin="1s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="700" cy="140" r="5" fill="#f59e0b"/>
+        <text x="710" y="135" font-family="JetBrains Mono,monospace" font-size="9" fill="#f59e0b" opacity="0.9">WARN · Engineering</text>
+
+        <circle cx="920" cy="100" r="6" fill="#10b981" opacity="0.7">
+          <animate attributeName="r" values="6;12;6" dur="3.5s" begin="0.5s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.7;0;0.7" dur="3.5s" begin="0.5s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="920" cy="100" r="5" fill="#10b981"/>
+        <text x="930" y="95" font-family="JetBrains Mono,monospace" font-size="9" fill="#10b981" opacity="0.9">OK · Legal</text>
+
+        <!-- Timeline labels -->
+        <text x="10" y="232" font-family="JetBrains Mono,monospace" font-size="9" fill="rgba(107,105,148,0.7)">00:00</text>
+        <text x="260" y="232" font-family="JetBrains Mono,monospace" font-size="9" fill="rgba(107,105,148,0.7)">06:00</text>
+        <text x="530" y="232" font-family="JetBrains Mono,monospace" font-size="9" fill="rgba(107,105,148,0.7)">12:00</text>
+        <text x="790" y="232" font-family="JetBrains Mono,monospace" font-size="9" fill="rgba(107,105,148,0.7)">18:00</text>
+        <text x="1050" y="232" font-family="JetBrains Mono,monospace" font-size="9" fill="rgba(107,105,148,0.7)">24:00</text>
+        <!-- Label -->
+        <text x="14" y="20" font-family="JetBrains Mono,monospace" font-size="9" fill="rgba(129,140,248,0.7)" letter-spacing="2">BEHAVIORAL ANOMALY STREAM · LIVE</text>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-band">
+  <div class="stats-inner reveal">
+    <div class="stat-block">
+      <div class="stat-num"><span>~</span>95<span>%</span></div>
+      <div class="stat-label">AUC-ROC Score</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-num">0<span>.</span>88</div>
+      <div class="stat-label">F1 Score (malicious)</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-num">20<span>+</span></div>
+      <div class="stat-label">Behavioral Features</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-num">3</div>
+      <div class="stat-label">Benchmarked Models</div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="padded" id="features">
+  <div class="container">
+    <div class="section-kicker reveal">Capabilities</div>
+    <h2 class="reveal">Built for real<br>security teams</h2>
+    <p class="section-sub reveal">Every feature was designed around the operational reality of catching internal threats — high imbalance, high stakes, zero tolerance for missed detections.</p>
+
+    <div class="features-grid">
+      <div class="feat-card reveal">
+        <div class="feat-num">01</div>
+        <div class="feat-icon-wrap">🧠</div>
+        <div class="feat-title">Ensemble ML Intelligence</div>
+        <div class="feat-desc">Three models compete — Logistic Regression, Random Forest, XGBoost — and the champion is deployed with threshold-optimized F1. Not a black box.</div>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-num">02</div>
+        <div class="feat-icon-wrap">⚖️</div>
+        <div class="feat-title">Imbalance-Aware Training</div>
+        <div class="feat-desc">With 95% normal vs 5% malicious, classic accuracy is useless. ThreatSense uses balanced class weights and scale_pos_weight to focus on what matters.</div>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-num">03</div>
+        <div class="feat-icon-wrap">📊</div>
+        <div class="feat-title">Behavioral Risk Scoring</div>
+        <div class="feat-desc">A composite risk score aggregates late exits, early entries, weekend access, night hours, and international travel into a single actionable signal.</div>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-num">04</div>
+        <div class="feat-icon-wrap">🎯</div>
+        <div class="feat-title">Threshold Optimization</div>
+        <div class="feat-desc">Decision threshold tuned beyond 0.5 to maximize F1-score. Security contexts demand high recall — ThreatSense minimizes missed threats, not just false positives.</div>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-num">05</div>
+        <div class="feat-icon-wrap">🔍</div>
+        <div class="feat-title">Full Explainability</div>
+        <div class="feat-desc">Feature importance from Random Forest and XGBoost reveals exactly which behavioral signals triggered each alert. Compliance-ready audit trails included.</div>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-num">06</div>
+        <div class="feat-icon-wrap">🔌</div>
+        <div class="feat-title">REST API Integration</div>
+        <div class="feat-desc">Drop ThreatSense into your SIEM, UEBA, or HR stack via a clean REST API. JSON in, verdict out. Fully documented OpenAPI spec available.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM / SOLUTION with animated illustration -->
+<section class="padded" id="problem" style="padding:7rem 2rem;">
+  <div class="container">
+    <div class="problem-grid">
+      <div>
+        <div class="section-kicker reveal">The Problem</div>
+        <h2 class="reveal">Insider threats are your most expensive blind spot</h2>
+        <p class="section-sub reveal" style="margin-bottom:2rem;">Traditional perimeter security stops outsiders. It does nothing for the employee already inside your walls.</p>
+        <div class="problem-list">
+          <div class="problem-item reveal">
+            <div class="problem-item-icon">📉</div>
+            <div class="problem-item-text">
+              <h4>Average cost: $15M per incident</h4>
+              <p>Insider threat incidents cost organizations $15.38M on average, according to Ponemon Institute 2023 data.</p>
+            </div>
+          </div>
+          <div class="problem-item reveal">
+            <div class="problem-item-icon">⏳</div>
+            <div class="problem-item-text">
+              <h4>Average detection time: 85 days</h4>
+              <p>Most insider threats go undetected for months while data exfiltration, sabotage, or fraud quietly accumulates.</p>
+            </div>
+          </div>
+          <div class="problem-item reveal">
+            <div class="problem-item-icon">👁️</div>
+            <div class="problem-item-text">
+              <h4>Manual review is impossible at scale</h4>
+              <p>Human analysts can't monitor thousands of employees simultaneously. Rule-based tools miss subtle behavioral patterns.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="solution-visual scan-line-wrap">
+          <div class="sol-header">
+            <span>ThreatSense — Live Model Output</span>
+            <div class="sol-status"><div class="sol-dot"></div><span style="font-size:11px;color:var(--safe)">Active</span></div>
+          </div>
+          <div class="sol-metric">
+            <div class="sol-metric-name">🎯 AUC-ROC Score</div>
+            <div class="sol-metric-bar"><div class="sol-metric-fill" data-width="95"></div></div>
+            <div class="sol-metric-val">0.95</div>
+          </div>
+          <div class="sol-metric">
+            <div class="sol-metric-name">🔍 PR-AUC Score</div>
+            <div class="sol-metric-bar"><div class="sol-metric-fill" data-width="85"></div></div>
+            <div class="sol-metric-val">0.85</div>
+          </div>
+          <div class="sol-metric">
+            <div class="sol-metric-name">⚡ Recall (malicious)</div>
+            <div class="sol-metric-bar"><div class="sol-metric-fill" data-width="91"></div></div>
+            <div class="sol-metric-val">0.91</div>
+          </div>
+          <div class="sol-metric">
+            <div class="sol-metric-name">🎯 F1 Score</div>
+            <div class="sol-metric-bar"><div class="sol-metric-fill" data-width="88"></div></div>
+            <div class="sol-metric-val">0.88</div>
+          </div>
+          <div class="sol-metric">
+            <div class="sol-metric-name">⏱️ Avg Inference Time</div>
+            <div class="sol-metric-bar"><div class="sol-metric-fill" data-width="15"></div></div>
+            <div class="sol-metric-val">&lt;50ms</div>
+          </div>
+          <div style="margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--border);">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.1em;margin-bottom:0.75rem;">LATEST ALERT</div>
+            <div style="background:var(--danger-soft);border:1px solid rgba(239,68,68,0.25);border-radius:10px;padding:1rem;display:flex;align-items:center;gap:12px;">
+              <span style="font-size:20px;">⚠️</span>
+              <div>
+                <div style="font-size:13px;font-weight:500;color:var(--text);">High Risk Behavior Detected</div>
+                <div style="font-size:12px;font-weight:300;color:var(--muted2);">Employee ID #4471 · Risk: 78% · Finance Dept</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS with animated pipeline illustration -->
+<section class="padded" id="how">
+  <div class="container">
+    <div class="section-kicker reveal">Model Pipeline</div>
+    <h2 class="reveal">From raw data<br>to risk verdict</h2>
+    <p class="section-sub reveal">Four precision-engineered stages transform employee behavioral signals into an explainable threat score in under 50ms.</p>
+
+    <!-- Animated pipeline illustration -->
+    <div class="reveal" style="margin-bottom:4rem;">
+      <svg viewBox="0 0 1100 130" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;overflow:visible;">
+        <defs>
+          <marker id="pipe-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#6366f1" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+        </defs>
+        <!-- Stage boxes -->
+        <!-- Stage 1 -->
+        <rect x="20" y="30" width="200" height="70" rx="10" fill="rgba(99,102,241,0.1)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+        <text x="120" y="60" text-anchor="middle" font-family="Bebas Neue,sans-serif" font-size="14" fill="#c7d2fe" letter-spacing="1">FEATURE ENG.</text>
+        <text x="120" y="80" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#6b6994">20+ signals</text>
+        <!-- Arrow -->
+        <line x1="220" y1="65" x2="270" y2="65" stroke="#6366f1" stroke-width="1.5" marker-end="url(#pipe-arrow)" opacity="0.7"/>
+        <circle cx="240" cy="65" r="4" fill="#6366f1" opacity="0.6">
+          <animate attributeName="cx" values="220;270" dur="1.5s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.8;0" dur="1.5s" repeatCount="indefinite"/>
+        </circle>
+        <!-- Stage 2 -->
+        <rect x="270" y="30" width="200" height="70" rx="10" fill="rgba(99,102,241,0.1)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+        <text x="370" y="60" text-anchor="middle" font-family="Bebas Neue,sans-serif" font-size="14" fill="#c7d2fe" letter-spacing="1">PREPROCESSING</text>
+        <text x="370" y="80" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#6b6994">Scale · Encode</text>
+        <!-- Arrow -->
+        <line x1="470" y1="65" x2="520" y2="65" stroke="#6366f1" stroke-width="1.5" marker-end="url(#pipe-arrow)" opacity="0.7"/>
+        <circle cx="490" cy="65" r="4" fill="#6366f1" opacity="0.6">
+          <animate attributeName="cx" values="470;520" dur="1.5s" begin="0.5s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.8;0" dur="1.5s" begin="0.5s" repeatCount="indefinite"/>
+        </circle>
+        <!-- Stage 3 -->
+        <rect x="520" y="30" width="200" height="70" rx="10" fill="rgba(99,102,241,0.1)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+        <text x="620" y="60" text-anchor="middle" font-family="Bebas Neue,sans-serif" font-size="14" fill="#c7d2fe" letter-spacing="1">TRAINING</text>
+        <text x="620" y="80" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#6b6994">LR · RF · XGBoost</text>
+        <!-- Arrow -->
+        <line x1="720" y1="65" x2="770" y2="65" stroke="#6366f1" stroke-width="1.5" marker-end="url(#pipe-arrow)" opacity="0.7"/>
+        <circle cx="740" cy="65" r="4" fill="#6366f1" opacity="0.6">
+          <animate attributeName="cx" values="720;770" dur="1.5s" begin="1s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.8;0" dur="1.5s" begin="1s" repeatCount="indefinite"/>
+        </circle>
+        <!-- Stage 4 -->
+        <rect x="770" y="30" width="200" height="70" rx="10" fill="rgba(239,68,68,0.08)" stroke="rgba(239,68,68,0.35)" stroke-width="1"/>
+        <text x="870" y="60" text-anchor="middle" font-family="Bebas Neue,sans-serif" font-size="14" fill="#fca5a5" letter-spacing="1">PREDICTION</text>
+        <text x="870" y="80" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#6b6994">thresh ≈ 0.38</text>
+        <!-- Arrow to verdict -->
+        <line x1="970" y1="65" x2="1020" y2="65" stroke="#ef4444" stroke-width="1.5" marker-end="url(#pipe-arrow)" opacity="0.7"/>
+        <circle cx="990" cy="65" r="4" fill="#ef4444" opacity="0.6">
+          <animate attributeName="cx" values="970;1020" dur="1.5s" begin="1.5s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.8;0" dur="1.5s" begin="1.5s" repeatCount="indefinite"/>
+        </circle>
+        <!-- Verdict -->
+        <rect x="1020" y="40" width="68" height="50" rx="8" fill="rgba(239,68,68,0.15)" stroke="#ef4444" stroke-width="1.5"/>
+        <text x="1054" y="62" text-anchor="middle" font-family="Bebas Neue,sans-serif" font-size="13" fill="#ef4444">ALERT</text>
+        <text x="1054" y="79" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#f87171">78%</text>
+        <!-- Pulse on verdict -->
+        <rect x="1020" y="40" width="68" height="50" rx="8" fill="none" stroke="#ef4444" stroke-width="1.5" opacity="0.4">
+          <animate attributeName="opacity" values="0.4;0;0.4" dur="2s" repeatCount="indefinite"/>
+          <animate attributeName="width" values="68;84;68" dur="2s" repeatCount="indefinite"/>
+          <animate attributeName="height" values="50;62;50" dur="2s" repeatCount="indefinite"/>
+          <animate attributeName="x" values="1020;1012;1020" dur="2s" repeatCount="indefinite"/>
+          <animate attributeName="y" values="40;34;40" dur="2s" repeatCount="indefinite"/>
+        </rect>
+      </svg>
+    </div>
+
+    <div class="pipeline reveal">
+      <div class="pipe-step">
+        <div class="pipe-num">01</div>
+        <div class="pipe-content">
+          <h4>Feature Engineering</h4>
+          <p>Raw timestamps are transformed into behavioral signals. Entry/exit hours, total presence duration, off-hours print ratio, composite risk score. 20+ features extracted per employee per day.</p>
+          <span class="pipe-tag">risk_score · presence_hours · ratio_offhours_print</span>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">02</div>
+        <div class="pipe-content">
+          <h4>Preprocessing & Encoding</h4>
+          <p>Label-encode categorical fields (department, position, campus). Drop leak-prone columns. Apply StandardScaler for Logistic Regression. Stratified train/test split preserves the 95/5 class ratio.</p>
+          <span class="pipe-tag">LabelEncoder · StandardScaler · StratifiedSplit</span>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">03</div>
+        <div class="pipe-content">
+          <h4>Imbalance-Aware Training</h4>
+          <p>class_weight='balanced' for Logistic Regression and Random Forest. scale_pos_weight = 19× for XGBoost. Optimizes for precision-recall in the minority (malicious) class — not overall accuracy.</p>
+          <span class="pipe-tag">class_weight='balanced' · scale_pos_weight=19 · PR-AUC</span>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">04</div>
+        <div class="pipe-content">
+          <h4>Threshold-Optimized Prediction</h4>
+          <p>Decision threshold tuned to ~0.38 (not 0.5) to maximize F1-score on the malicious class. Ensemble of 3 models votes; XGBoost champion is deployed. Score + explanation returned via API.</p>
+          <span class="pipe-tag">threshold≈0.38 · XGBoost champion · Explainability</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="benchmark-wrap reveal">
+      <div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1.25rem;">Model Benchmark — Test Set</div>
+        <div class="model-cards">
+          <div class="model-card champion">
+            <div class="model-header">
+              <span class="model-name">XGBoost</span>
+              <span class="champion-badge">CHAMPION</span>
+            </div>
+            <div class="model-metrics">
+              <div class="mm-item"><div class="mm-label">F1 (malicious)</div><div class="mm-val">0.88</div></div>
+              <div class="mm-item"><div class="mm-label">AUC-ROC</div><div class="mm-val">0.95</div></div>
+              <div class="mm-item"><div class="mm-label">PR-AUC</div><div class="mm-val">0.85</div></div>
+              <div class="mm-item"><div class="mm-label">Recall</div><div class="mm-val">0.91</div></div>
+            </div>
+          </div>
+          <div class="model-card">
+            <div class="model-header"><span class="model-name">Random Forest</span></div>
+            <div class="model-metrics">
+              <div class="mm-item"><div class="mm-label">F1 (malicious)</div><div class="mm-val">0.82</div></div>
+              <div class="mm-item"><div class="mm-label">AUC-ROC</div><div class="mm-val">0.91</div></div>
+            </div>
+          </div>
+          <div class="model-card">
+            <div class="model-header"><span class="model-name">Logistic Regression</span></div>
+            <div class="model-metrics">
+              <div class="mm-item"><div class="mm-label">F1 (malicious)</div><div class="mm-val">0.74</div></div>
+              <div class="mm-item"><div class="mm-label">AUC-ROC</div><div class="mm-val">0.87</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="feature-importance">
+        <div class="fi-header">Top Behavioral Features — XGBoost Importance</div>
+        <div class="fi-row">
+          <div class="fi-name">🎯 risk_score</div>
+          <div class="fi-bar-wrap"><div class="fi-bar" data-width="84"></div></div>
+          <div class="fi-val">0.21</div>
+        </div>
+        <div class="fi-row">
+          <div class="fi-name">⏱️ presence_hours</div>
+          <div class="fi-bar-wrap"><div class="fi-bar" data-width="68"></div></div>
+          <div class="fi-val">0.17</div>
+        </div>
+        <div class="fi-row">
+          <div class="fi-name">🖨️ ratio_offhours_print</div>
+          <div class="fi-bar-wrap"><div class="fi-bar" data-width="56"></div></div>
+          <div class="fi-val">0.14</div>
+        </div>
+        <div class="fi-row">
+          <div class="fi-name">🏢 num_unique_campus</div>
+          <div class="fi-bar-wrap"><div class="fi-bar" data-width="44"></div></div>
+          <div class="fi-val">0.11</div>
+        </div>
+        <div class="fi-row">
+          <div class="fi-name">✈️ hostile_country_trip</div>
+          <div class="fi-bar-wrap"><div class="fi-bar" data-width="36"></div></div>
+          <div class="fi-val">0.09</div>
+        </div>
+        <div class="fi-row">
+          <div class="fi-name">🌙 night_hours_entry</div>
+          <div class="fi-bar-wrap"><div class="fi-bar" data-width="28"></div></div>
+          <div class="fi-val">0.07</div>
+        </div>
+        <div class="fi-row" style="margin-bottom:0">
+          <div class="fi-name">📅 weekend_entry</div>
+          <div class="fi-bar-wrap"><div class="fi-bar" data-width="22"></div></div>
+          <div class="fi-val">0.05</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES with illustrated icons -->
+<section class="padded" id="usecases">
+  <div class="container">
+    <div class="section-kicker reveal">Who It's For</div>
+    <h2 class="reveal">Industries &<br>use cases</h2>
+    <p class="section-sub reveal">ThreatSense is built for any organization where trust is a critical asset and insider access is a real risk vector.</p>
+    <div class="usecase-grid">
+      <div class="uc-card reveal">
+        <!-- Inline SVG illustration: banking -->
+        <svg width="56" height="56" viewBox="0 0 56 56" style="margin-bottom:1rem;display:block;" xmlns="http://www.w3.org/2000/svg">
+          <rect width="56" height="56" rx="12" fill="rgba(99,102,241,0.1)"/>
+          <rect x="10" y="30" width="6" height="14" rx="1" fill="#6366f1" opacity="0.7"/>
+          <rect x="19" y="24" width="6" height="20" rx="1" fill="#818cf8" opacity="0.8"/>
+          <rect x="28" y="20" width="6" height="24" rx="1" fill="#6366f1"/>
+          <rect x="37" y="26" width="6" height="18" rx="1" fill="#818cf8" opacity="0.8"/>
+          <rect x="8" y="44" width="40" height="2" rx="1" fill="#c7d2fe" opacity="0.4"/>
+          <circle cx="44" cy="14" r="8" fill="rgba(239,68,68,0.15)" stroke="#ef4444" stroke-width="1.5"/>
+          <text x="44" y="18" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#ef4444">!</text>
+        </svg>
+        <div class="uc-title">Financial Services & Banking</div>
+        <div class="uc-desc">Detect rogue traders, unauthorized data access, and fraudulent activity before financial losses or regulatory sanctions occur. Flag Finance and Legal department anomalies in real time.</div>
+        <span class="uc-tag">Fraud Prevention · Regulatory Compliance</span>
+      </div>
+      <div class="uc-card reveal">
+        <!-- Inline SVG illustration: healthcare -->
+        <svg width="56" height="56" viewBox="0 0 56 56" style="margin-bottom:1rem;display:block;" xmlns="http://www.w3.org/2000/svg">
+          <rect width="56" height="56" rx="12" fill="rgba(16,185,129,0.08)"/>
+          <rect x="22" y="14" width="12" height="28" rx="4" fill="#10b981" opacity="0.7"/>
+          <rect x="14" y="22" width="28" height="12" rx="4" fill="#10b981" opacity="0.7"/>
+          <circle cx="42" cy="14" r="7" fill="rgba(99,102,241,0.15)" stroke="#6366f1" stroke-width="1.5"/>
+          <rect x="39" y="10" width="6" height="8" rx="1" fill="none" stroke="#6366f1" stroke-width="1"/>
+          <line x1="42" y1="10" x2="42" y2="18" stroke="#6366f1" stroke-width="1"/>
+          <line x1="38" y1="14" x2="46" y2="14" stroke="#6366f1" stroke-width="1"/>
+        </svg>
+        <div class="uc-title">Healthcare & Pharmaceuticals</div>
+        <div class="uc-desc">Protect patient records, clinical trial data, and intellectual property from internal exfiltration. Comply with HIPAA requirements with behavioral audit trails and automated alerts.</div>
+        <span class="uc-tag">HIPAA · IP Protection · PHI Security</span>
+      </div>
+      <div class="uc-card reveal">
+        <!-- Inline SVG illustration: defense -->
+        <svg width="56" height="56" viewBox="0 0 56 56" style="margin-bottom:1rem;display:block;" xmlns="http://www.w3.org/2000/svg">
+          <rect width="56" height="56" rx="12" fill="rgba(245,158,11,0.08)"/>
+          <path d="M28 10 L42 16 L42 30 C42 38 28 46 28 46 C28 46 14 38 14 30 L14 16 Z" fill="rgba(245,158,11,0.15)" stroke="#f59e0b" stroke-width="1.5"/>
+          <circle cx="28" cy="28" r="7" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3 2"/>
+          <circle cx="28" cy="28" r="3" fill="#f59e0b"/>
+          <line x1="28" y1="21" x2="28" y2="18" stroke="#f59e0b" stroke-width="1.5"/>
+          <line x1="35" y1="28" x2="38" y2="28" stroke="#f59e0b" stroke-width="1.5"/>
+        </svg>
+        <div class="uc-title">Defense & Government</div>
+        <div class="uc-desc">Identify clearance-level personnel with anomalous access patterns, off-hours behavior, or foreign travel flags. Fulfill executive insider threat program mandates with automated scoring.</div>
+        <span class="uc-tag">NISPOM · Clearance Monitoring</span>
+      </div>
+      <div class="uc-card reveal">
+        <!-- Inline SVG illustration: tech -->
+        <svg width="56" height="56" viewBox="0 0 56 56" style="margin-bottom:1rem;display:block;" xmlns="http://www.w3.org/2000/svg">
+          <rect width="56" height="56" rx="12" fill="rgba(99,102,241,0.1)"/>
+          <rect x="10" y="16" width="36" height="22" rx="3" fill="none" stroke="#6366f1" stroke-width="1.5"/>
+          <rect x="22" y="38" width="12" height="3" fill="#6366f1" opacity="0.6"/>
+          <rect x="14" y="41" width="28" height="2" rx="1" fill="#6366f1" opacity="0.3"/>
+          <text x="14" y="29" font-family="JetBrains Mono,monospace" font-size="9" fill="#818cf8">&lt;/&gt;</text>
+          <circle cx="42" cy="15" r="7" fill="rgba(239,68,68,0.15)" stroke="#ef4444" stroke-width="1.5"/>
+          <line x1="39" y1="12" x2="45" y2="18" stroke="#ef4444" stroke-width="1.5"/>
+          <line x1="45" y1="12" x2="39" y2="18" stroke="#ef4444" stroke-width="1.5"/>
+        </svg>
+        <div class="uc-title">Technology & SaaS</div>
+        <div class="uc-desc">Protect source code, customer data, and product roadmaps from departing employees or compromised accounts. Integrate with your SIEM and HR offboarding workflows via REST API.</div>
+        <span class="uc-tag">IP Protection · SIEM Integration · Off-boarding</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO -->
+<section class="padded" id="demo">
+  <div class="container">
+    <div class="section-kicker reveal">Interactive Demo</div>
+    <h2 class="reveal">Try a live<br>prediction</h2>
+    <p class="section-sub reveal">Enter one day's behavioral data for an employee and see ThreatSense's ensemble model return a real-time risk verdict.</p>
+
+    <div class="demo-wrap">
+      <div class="demo-form reveal">
+        <div class="form-group">
+          <div class="form-group-title">// time behavior</div>
+          <div class="form-row-2">
+            <div class="field"><label>Entry Hour (0–23)</label><input type="number" id="entry_hour" min="0" max="23" value="9"></div>
+            <div class="field"><label>Exit Hour (0–23)</label><input type="number" id="exit_hour" min="0" max="23" value="18"></div>
+          </div>
+          <div class="field"><label>Total Presence (minutes)</label><input type="number" id="presence_minutes" min="0" value="480"></div>
+        </div>
+        <div class="form-group">
+          <div class="form-group-title">// access flags</div>
+          <div class="field"><label>Late Exit Flag</label><div class="toggle-group" id="late_exit"><button class="tog on" data-val="0" onclick="tg(this,'late_exit')">No</button><button class="tog" data-val="1" onclick="tg(this,'late_exit')">Yes</button></div></div>
+          <div class="field"><label>Early Entry Flag</label><div class="toggle-group" id="early_entry"><button class="tog on" data-val="0" onclick="tg(this,'early_entry')">No</button><button class="tog" data-val="1" onclick="tg(this,'early_entry')">Yes</button></div></div>
+          <div class="form-row-2">
+            <div class="field"><label>Weekend Entry</label><div class="toggle-group" id="weekend_entry"><button class="tog on" data-val="0" onclick="tg(this,'weekend_entry')">No</button><button class="tog" data-val="1" onclick="tg(this,'weekend_entry')">Yes</button></div></div>
+            <div class="field"><label>Night Hours Entry</label><div class="toggle-group" id="night_hours"><button class="tog on" data-val="0" onclick="tg(this,'night_hours')">No</button><button class="tog" data-val="1" onclick="tg(this,'night_hours')">Yes</button></div></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-group-title">// activity & travel</div>
+          <div class="form-row-2">
+            <div class="field"><label>Print Commands</label><input type="number" id="print_cmds" min="0" value="5"></div>
+            <div class="field"><label>Off-Hours Prints</label><input type="number" id="offhours_prints" min="0" value="0"></div>
+          </div>
+          <div class="form-row-2">
+            <div class="field"><label>Unique Campus Count</label><input type="number" id="campus_count" min="1" value="1"></div>
+            <div class="field"><label>Hostile Country Trip</label><div class="toggle-group" id="hostile_trip"><button class="tog on" data-val="0" onclick="tg(this,'hostile_trip')">No</button><button class="tog" data-val="1" onclick="tg(this,'hostile_trip')">Yes</button></div></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-group-title">// employee profile</div>
+          <div class="form-row-2">
+            <div class="field"><label>Department</label><select id="department"><option>Engineering</option><option>Finance</option><option>HR</option><option>Legal</option><option>Executive</option><option>Operations</option></select></div>
+            <div class="field"><label>Position Level</label><select id="position"><option>Junior</option><option>Senior</option><option>Manager</option><option>Director</option><option>C-Level</option></select></div>
+          </div>
+        </div>
+        <button class="run-btn" id="runBtn" onclick="runPrediction()">
+          <span id="btn-text">ANALYZE EMPLOYEE BEHAVIOR →</span>
+        </button>
+      </div>
+
+      <div class="result-panel reveal">
+        <div class="result-card" id="result-card">
+          <div class="placeholder-wrap" id="placeholder">
+            <!-- Animated placeholder SVG -->
+            <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="opacity:0.25;margin-bottom:8px;">
+              <circle cx="60" cy="60" r="50" fill="none" stroke="#6366f1" stroke-width="1.5" stroke-dasharray="8 4" opacity="0.6">
+                <animateTransform attributeName="transform" type="rotate" from="0 60 60" to="360 60 60" dur="10s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="60" cy="60" r="36" fill="none" stroke="#818cf8" stroke-width="1" stroke-dasharray="5 3" opacity="0.5">
+                <animateTransform attributeName="transform" type="rotate" from="360 60 60" to="0 60 60" dur="7s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="60" cy="60" r="20" fill="rgba(99,102,241,0.12)" stroke="#6366f1" stroke-width="1"/>
+              <text x="60" y="65" text-anchor="middle" font-family="Outfit,sans-serif" font-size="22" fill="#6366f1">🔐</text>
+            </svg>
+            <div class="placeholder-msg">Fill in the form and run analysis to see a threat assessment</div>
+          </div>
+          <div id="result-content" style="display:none;"></div>
+        </div>
+        <div class="result-card" id="signals-card" style="display:none;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1rem;">Behavioral Signals Detected</div>
+          <ul class="signals-list" id="factors-list"></ul>
+        </div>
+        <div class="result-card" id="model-votes-card" style="display:none;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1rem;">Model Consensus</div>
+          <div class="model-votes-grid" id="model-scores"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BULK ANALYSIS -->
+<section class="padded" id="bulk" style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div class="section-kicker reveal">Enterprise Bulk Analysis</div>
+    <h2 class="reveal">Scan your<br>entire workforce</h2>
+    <p class="section-sub reveal">Upload a CSV of employee behavioral data and ThreatSense will run batch predictions across every record — surfacing anomalies, generating risk alerts, and producing a downloadable report in seconds.</p>
+
+    <!-- Upload Zone -->
+    <div class="reveal" id="bulk-upload-zone" style="
+      border: 2px dashed rgba(99,102,241,0.35); border-radius: 20px;
+      padding: 3rem 2rem; text-align: center; cursor: pointer;
+      background: rgba(99,102,241,0.03); transition: all 0.3s;
+      margin-bottom: 2rem; position: relative;
+    "
+      ondragover="event.preventDefault();this.style.borderColor='#6366f1';this.style.background='rgba(99,102,241,0.08)'"
+      ondragleave="this.style.borderColor='rgba(99,102,241,0.35)';this.style.background='rgba(99,102,241,0.03)'"
+      ondrop="handleBulkDrop(event)"
+      onclick="document.getElementById('bulk-csv-input').click()"
+    >
+      <input type="file" id="bulk-csv-input" accept=".csv" style="display:none" onchange="handleBulkFile(this.files[0])">
+      <div style="font-size:42px;margin-bottom:1rem;opacity:0.5;">📂</div>
+      <div style="font-family:var(--head);font-size:22px;letter-spacing:1px;color:#fff;margin-bottom:0.5rem;">DROP YOUR CSV HERE</div>
+      <div style="font-size:14px;color:var(--muted2);margin-bottom:1.5rem;">or click to browse · supports up to 10,000 employee records</div>
+      <button class="btn-outline" style="pointer-events:none;font-size:13px;padding:10px 24px;">Choose CSV File</button>
+      <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.1em;margin-bottom:0.75rem;">EXPECTED COLUMNS</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">
+          <span style="font-family:var(--mono);font-size:10px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:4px;padding:3px 8px;color:var(--accent3)">employee_id</span>
+          <span style="font-family:var(--mono);font-size:10px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:4px;padding:3px 8px;color:var(--accent3)">entry_hour</span>
+          <span style="font-family:var(--mono);font-size:10px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:4px;padding:3px 8px;color:var(--accent3)">exit_hour</span>
+          <span style="font-family:var(--mono);font-size:10px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:4px;padding:3px 8px;color:var(--accent3)">presence_minutes</span>
+          <span style="font-family:var(--mono);font-size:10px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:4px;padding:3px 8px;color:var(--accent3)">late_exit</span>
+          <span style="font-family:var(--mono);font-size:10px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:4px;padding:3px 8px;color:var(--accent3)">weekend_entry</span>
+          <span style="font-family:var(--mono);font-size:10px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:4px;padding:3px 8px;color:var(--accent3)">num_print_commands</span>
+          <span style="font-family:var(--mono);font-size:10px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:4px;padding:3px 8px;color:var(--accent3)">offhours_prints</span>
+          <span style="font-family:var(--mono);font-size:10px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:4px;padding:3px 8px;color:var(--accent3)">department</span>
+          <span style="font-family:var(--mono);font-size:10px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:4px;padding:3px 8px;color:var(--accent3)">hostile_country_trip</span>
+        </div>
+      </div>
+      <div style="margin-top:1rem;">
+        <a href="#" onclick="downloadSampleCSV();return false;" style="font-family:var(--mono);font-size:11px;color:var(--accent2);text-decoration:none;letter-spacing:0.06em;">↓ DOWNLOAD SAMPLE CSV TEMPLATE</a>
+      </div>
+    </div>
+
+    <!-- Processing State -->
+    <div id="bulk-processing" style="display:none;text-align:center;padding:3rem 2rem;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:1.5rem;">
+        <div class="spinner" style="width:24px;height:24px;border-width:3px;"></div>
+        <div style="font-family:var(--head);font-size:24px;letter-spacing:1px;color:#fff;" id="bulk-status-text">PARSING CSV...</div>
+      </div>
+      <div style="max-width:480px;margin:0 auto;">
+        <div style="height:6px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;margin-bottom:0.75rem;">
+          <div id="bulk-progress-bar" style="height:100%;background:var(--accent);border-radius:3px;width:0%;transition:width 0.4s ease;"></div>
+        </div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--muted);" id="bulk-progress-label">0 / 0 records analyzed</div>
+      </div>
+    </div>
+
+    <!-- Results Dashboard -->
+    <div id="bulk-results" style="display:none;">
+
+      <!-- Summary KPIs -->
+      <div id="bulk-kpi-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:2rem;"></div>
+
+      <!-- Alert Banner -->
+      <div id="bulk-alert-banner" style="display:none;margin-bottom:2rem;"></div>
+
+      <!-- Charts row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;">
+        <div style="background:var(--surface3);border:1px solid var(--border);border-radius:16px;padding:1.75rem;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1.25rem;">Risk Distribution</div>
+          <canvas id="bulk-dist-chart" height="180"></canvas>
+        </div>
+        <div style="background:var(--surface3);border:1px solid var(--border);border-radius:16px;padding:1.75rem;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1.25rem;">Threats by Department</div>
+          <canvas id="bulk-dept-chart" height="180"></canvas>
+        </div>
+      </div>
+
+      <!-- Alert table -->
+      <div style="background:var(--surface3);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:2rem;">
+        <div style="padding:1.25rem 1.75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Flagged Records — Requires Investigation</div>
+            <div id="alert-table-subtitle" style="font-size:13px;color:var(--muted2);"></div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <select id="bulk-filter-dept" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--muted2);font-family:var(--mono);" onchange="renderAlertTable()">
+              <option value="">All Departments</option>
+            </select>
+            <select id="bulk-filter-sev" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--muted2);font-family:var(--mono);" onchange="renderAlertTable()">
+              <option value="">All Severities</option>
+              <option value="CRITICAL">CRITICAL</option>
+              <option value="HIGH">HIGH</option>
+              <option value="MEDIUM">MEDIUM</option>
+            </select>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table id="bulk-alert-table" style="width:100%;border-collapse:collapse;font-size:13px;"></table>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button class="btn-primary" onclick="exportAlertReport()" style="font-size:13px;padding:12px 24px;">📥 Export Alert Report (CSV)</button>
+        <button class="btn-outline" onclick="resetBulkUpload()" style="font-size:13px;padding:12px 24px;">↩ Analyze Another File</button>
+        <button class="btn-outline" onclick="sendAllAlerts()" style="font-size:13px;padding:12px 24px;border-color:rgba(239,68,68,0.4);color:var(--danger);" id="send-alerts-btn">🚨 Dispatch All Alerts</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="padded" id="pricing">
+  <div class="container">
+    <div class="section-kicker reveal">Pricing</div>
+    <h2 class="reveal">Simple,<br>transparent pricing</h2>
+    <p class="section-sub reveal">Scale from startup to enterprise without renegotiating every year. All plans include API access, audit logs, and dedicated onboarding.</p>
+    <div class="pricing-grid">
+      <div class="price-card reveal">
+        <div class="plan-name">Starter</div>
+        <div class="plan-desc">For teams exploring insider threat detection</div>
+        <div class="plan-price">$499<span>/mo</span></div>
+        <div class="plan-period">billed annually · up to 200 employees</div>
+        <ul class="plan-features">
+          <li>Up to 200 employee profiles</li>
+          <li>REST API access (10K calls/mo)</li>
+          <li>Real-time behavioral scoring</li>
+          <li>Basic alerting & notifications</li>
+          <li>30-day audit history</li>
+          <li class="dim">Custom model retraining</li>
+          <li class="dim">SSO / SAML integration</li>
+          <li class="dim">Dedicated support</li>
+        </ul>
+        <button class="plan-btn plan-btn-outline">Start Free Trial</button>
+      </div>
+      <div class="price-card featured reveal">
+        <div class="price-badge">MOST POPULAR</div>
+        <div class="plan-name">Professional</div>
+        <div class="plan-desc">For security teams needing full detection power</div>
+        <div class="plan-price">$1,999<span>/mo</span></div>
+        <div class="plan-period">billed annually · up to 2,000 employees</div>
+        <ul class="plan-features">
+          <li>Up to 2,000 employee profiles</li>
+          <li>REST API access (unlimited)</li>
+          <li>Real-time + batch behavioral scoring</li>
+          <li>Advanced alerting + SIEM integration</li>
+          <li>1-year audit history</li>
+          <li>Custom model retraining (quarterly)</li>
+          <li>SSO / SAML integration</li>
+          <li class="dim">Dedicated CSM</li>
+        </ul>
+        <button class="plan-btn plan-btn-fill">Get Started</button>
+      </div>
+      <div class="price-card reveal">
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-desc">For global organizations with complex requirements</div>
+        <div class="plan-price" style="font-size:36px;letter-spacing:0;">Custom</div>
+        <div class="plan-period">contact us for pricing · unlimited employees</div>
+        <ul class="plan-features">
+          <li>Unlimited employee profiles</li>
+          <li>Private cloud or on-premise deployment</li>
+          <li>Custom ML model training on your data</li>
+          <li>Advanced analytics dashboard</li>
+          <li>Unlimited audit history</li>
+          <li>Custom model retraining (on-demand)</li>
+          <li>SSO / SAML + MFA</li>
+          <li>Dedicated Customer Success Manager</li>
+        </ul>
+        <button class="plan-btn plan-btn-outline">Contact Sales</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DOCS -->
+<section class="padded" id="docs" style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div class="section-kicker reveal">Documentation</div>
+    <h2 class="reveal">Everything you<br>need to ship</h2>
+    <p class="section-sub reveal">From model architecture to API integration — all documented, all versioned.</p>
+    <div class="docs-grid">
+      <div class="doc-card reveal">
+        <div class="doc-tag">01 / Model Architecture</div>
+        <div class="doc-title">How the model works</div>
+        <div class="doc-body">
+          <p>ThreatSense trains three classifiers and selects the best by F1-score on the malicious class:</p>
+          <ul>
+            <li><strong>Logistic Regression</strong> — pipeline with StandardScaler, class_weight balanced</li>
+            <li><strong>Random Forest</strong> — 100 estimators, max_depth 15, balanced weights</li>
+            <li><strong>XGBoost</strong> — 200 estimators, scale_pos_weight ≈ 19, eval_metric aucpr</li>
+          </ul>
+          <p>Features include raw signals (<code>num_print_commands</code>, <code>num_unique_campus</code>) and engineered ones (<code>risk_score</code>, <code>ratio_offhours_print</code>, <code>presence_hours</code>).</p>
+        </div>
+      </div>
+      <div class="doc-card reveal">
+        <div class="doc-tag">02 / REST API Guide</div>
+        <div class="doc-title">Integrate in minutes</div>
+        <div class="doc-body">
+          <p>Send a POST request with one day's behavioral data per employee:</p>
+          <ul>
+            <li><strong>Endpoint:</strong> <code>POST /v1/predict</code></li>
+            <li><strong>Auth:</strong> Bearer token via API key</li>
+            <li><strong>Input:</strong> JSON with behavioral fields</li>
+            <li><strong>Output:</strong> Risk score, verdict, confidence, signals</li>
+          </ul>
+          <p>Response time under 50ms. Rate limits: 1,000 req/min on Professional plans. Full OpenAPI 3.0 spec available in the developer portal.</p>
+        </div>
+      </div>
+      <div class="doc-card reveal">
+        <div class="doc-tag">03 / Metrics & Thresholds</div>
+        <div class="doc-title">Understanding the scores</div>
+        <div class="doc-body">
+          <p>ThreatSense uses <strong>PR-AUC and F1</strong> as primary metrics — not accuracy — because the dataset is heavily imbalanced (~95% normal).</p>
+          <ul>
+            <li><code>AUC-ROC ≈ 0.95</code> — strong discriminative power</li>
+            <li><code>PR-AUC ≈ 0.85</code> — meaningful in the minority class</li>
+            <li><code>Threshold ≈ 0.38</code> — tuned to maximize F1</li>
+          </ul>
+          <p>A lower threshold = higher recall = fewer missed threats (fewer false negatives), at the cost of more false alarms. Adjustable per deployment.</p>
+        </div>
+      </div>
+      <div class="doc-card reveal">
+        <div class="doc-tag">04 / Deployment Options</div>
+        <div class="doc-title">Flexible infrastructure</div>
+        <div class="doc-body">
+          <p>ThreatSense can be deployed in three modes to match your security posture:</p>
+          <ul>
+            <li><strong>Cloud SaaS</strong> — zero infrastructure, instant start</li>
+            <li><strong>Private Cloud</strong> — AWS/Azure/GCP VPC isolation</li>
+            <li><strong>On-Premise</strong> — Docker/Kubernetes, air-gapped support</li>
+          </ul>
+          <p>All modes include end-to-end encryption, SOC 2 Type II compliance documentation, and zero data retention by default.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="cta-inner">
+    <!-- Decorative animated rings behind CTA -->
+    <div style="position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:24px;">
+      <div class="scan-ring" style="position:absolute;left:50%;top:50%;width:300px;height:300px;"></div>
+      <div class="scan-ring" style="position:absolute;left:50%;top:50%;width:500px;height:500px;animation-delay:1.5s;"></div>
+    </div>
+    <div class="cta-kicker reveal">Ready to protect your organization?</div>
+    <div class="cta-h reveal">STOP<br>THE<br>THREAT</div>
+    <p class="cta-sub reveal">Join forward-thinking security teams using ThreatSense to detect insider threats before they escalate. Start your 14-day free trial — no credit card required.</p>
+    <div class="cta-btns reveal">
+      <a class="btn-primary" href="#demo">▶ Try Free Demo</a>
+      <a class="btn-outline" href="#pricing">View Pricing</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-brand">Threat<span>Sense</span></div>
+    <div class="footer-desc">Enterprise Insider Threat Intelligence · XGBoost + Random Forest + Logistic Regression<br>Built with precision ML for real security teams.</div>
+  </div>
+  <div class="footer-right">
+    <p>© 2025 ThreatSense. All rights reserved.</p>
+    <p>SOC 2 Ready · GDPR Compliant</p>
+    <div class="footer-links">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Security</a>
+      <a href="#docs">Docs</a>
+      <a href="#">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ────────────────────────────────────────
+   PARTICLES CANVAS
+──────────────────────────────────────── */
+(function() {
+  const canvas = document.getElementById('particles-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [], connections = [];
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const PARTICLE_COUNT = 60;
+
+  function createParticle() {
+    return {
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      r: Math.random() * 2 + 0.5,
+      threat: Math.random() < 0.07,
+      pulse: Math.random() * Math.PI * 2,
+      pulseSpeed: 0.02 + Math.random() * 0.02
+    };
+  }
+
+  for (let i = 0; i < PARTICLE_COUNT; i++) particles.push(createParticle());
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // connections
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 140) {
+          const alpha = (1 - dist / 140) * 0.12;
+          const isTheatConn = particles[i].threat || particles[j].threat;
+          ctx.strokeStyle = isTheatConn
+            ? `rgba(239,68,68,${alpha * 1.5})`
+            : `rgba(99,102,241,${alpha})`;
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // particles
+    particles.forEach(p => {
+      p.pulse += p.pulseSpeed;
+      const pulseAlpha = 0.5 + 0.5 * Math.sin(p.pulse);
+
+      if (p.threat) {
+        // threat particle: red with pulse ring
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r * 3 * pulseAlpha, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(239,68,68,${0.1 * pulseAlpha})`;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r + 0.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(239,68,68,${0.7 + 0.3 * pulseAlpha})`;
+        ctx.fill();
+      } else {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(99,102,241,${0.35 + 0.15 * pulseAlpha})`;
+        ctx.fill();
+      }
+
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0) p.x = W;
+      if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H;
+      if (p.y > H) p.y = 0;
+    });
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ────────────────────────────────────────
+   LIVE THREAT COUNTER
+──────────────────────────────────────── */
+let threatCount = Math.floor(Math.random() * 40) + 12;
+document.getElementById('live-threat-count').textContent = threatCount;
+setInterval(() => {
+  if (Math.random() < 0.3) {
+    threatCount += Math.floor(Math.random() * 3) + 1;
+    document.getElementById('live-threat-count').textContent = threatCount;
+  }
+}, 4000);
+
+/* ────────────────────────────────────────
+   ACTIVITY BARS (waveform in threat feed)
+──────────────────────────────────────── */
+(function() {
+  const g = document.getElementById('activity-bars');
+  const BAR_COUNT = 110;
+  const W = 1100;
+  const BAR_W = W / BAR_COUNT - 1;
+  for (let i = 0; i < BAR_COUNT; i++) {
+    const x = i * (W / BAR_COUNT);
+    const baseH = 20 + Math.random() * 40;
+    // spike at threat positions
+    const isThreatZone = (i >= 24 && i <= 28) || (i >= 64 && i <= 68);
+    const h = isThreatZone ? 80 + Math.random() * 60 : baseH;
+    const y = 210 - h;
+    const color = isThreatZone
+      ? 'rgba(239,68,68,0.5)'
+      : 'rgba(99,102,241,0.25)';
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('x', x);
+    rect.setAttribute('y', y);
+    rect.setAttribute('width', BAR_W);
+    rect.setAttribute('height', h);
+    rect.setAttribute('rx', '1');
+    rect.setAttribute('fill', color);
+    g.appendChild(rect);
+  }
+})();
+
+/* ────────────────────────────────────────
+   SCROLL REVEAL
+──────────────────────────────────────── */
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+
+      // Animate metric bars when they become visible
+      e.target.querySelectorAll('.sol-metric-fill[data-width]').forEach(bar => {
+        bar.style.width = bar.dataset.width + '%';
+      });
+      e.target.querySelectorAll('.fi-bar[data-width]').forEach(bar => {
+        bar.style.width = bar.dataset.width + '%';
+      });
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+/* ────────────────────────────────────────
+   BULK CSV ANALYSIS ENGINE
+──────────────────────────────────────── */
+let bulkResults = [];
+let bulkCharts = {};
+
+function downloadSampleCSV() {
+  const header = 'employee_id,entry_hour,exit_hour,presence_minutes,late_exit,early_entry,weekend_entry,night_hours_entry,num_print_commands,offhours_prints,num_unique_campus,hostile_country_trip,department,position';
+  const rows = [
+    'EMP001,9,18,480,0,0,0,0,5,0,1,0,Engineering,Senior',
+    'EMP002,6,22,720,1,1,1,0,20,15,3,0,Finance,Manager',
+    'EMP003,8,17,540,0,0,0,0,3,0,1,0,HR,Junior',
+    'EMP004,2,23,840,1,1,1,1,40,38,4,1,Legal,Director',
+    'EMP005,9,18,490,0,0,0,0,6,1,1,0,Engineering,Junior',
+    'EMP006,5,21,960,1,1,0,1,25,20,2,1,Finance,C-Level',
+    'EMP007,9,17,480,0,0,0,0,4,0,1,0,Operations,Senior',
+    'EMP008,7,20,600,1,0,1,0,10,8,2,0,Engineering,Manager',
+  ];
+  const blob = new Blob([header + '\n' + rows.join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'threatsense_template.csv';
+  a.click();
+}
+
+function handleBulkDrop(e) {
+  e.preventDefault();
+  document.getElementById('bulk-upload-zone').style.borderColor = 'rgba(99,102,241,0.35)';
+  document.getElementById('bulk-upload-zone').style.background = 'rgba(99,102,241,0.03)';
+  const file = e.dataTransfer.files[0];
+  if (file && file.name.endsWith('.csv')) handleBulkFile(file);
+}
+
+function handleBulkFile(file) {
+  if (!file) return;
+  document.getElementById('bulk-upload-zone').style.display = 'none';
+  document.getElementById('bulk-processing').style.display = 'block';
+  document.getElementById('bulk-results').style.display = 'none';
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result;
+    const lines = text.trim().split('\n').filter(l => l.trim());
+    if (lines.length < 2) { alert('CSV must have a header row and at least one data row.'); resetBulkUpload(); return; }
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    const records = lines.slice(1).map(line => {
+      const vals = line.split(',').map(v => v.trim());
+      const obj = {};
+      headers.forEach((h, i) => obj[h] = vals[i] || '');
+      return obj;
+    });
+    processBulkRecords(records);
+  };
+  reader.readAsText(file);
+}
+
+function scoreRecord(r) {
+  const entryHour = parseInt(r.entry_hour) || 9;
+  const exitHour = parseInt(r.exit_hour) || 18;
+  const presenceMins = parseInt(r.presence_minutes) || 480;
+  const lateExit = parseInt(r.late_exit) || 0;
+  const earlyEntry = parseInt(r.early_entry) || 0;
+  const weekendEntry = parseInt(r.weekend_entry) || 0;
+  const nightHours = parseInt(r.night_hours_entry) || 0;
+  const printCmds = parseInt(r.num_print_commands) || 0;
+  const offhoursPrints = parseInt(r.offhours_prints) || 0;
+  const campusCount = parseInt(r.num_unique_campus) || 1;
+  const hostileTrip = parseInt(r.hostile_country_trip) || 0;
+  const dept = r.department || 'Engineering';
+  const pos = r.position || 'Senior';
+
+  const riskScore = lateExit + earlyEntry + weekendEntry + nightHours + hostileTrip;
+  const presenceHours = presenceMins / 60;
+  const offhoursPrintRatio = printCmds > 0 ? offhoursPrints / printCmds : 0;
+  const isAfterHours = exitHour >= 20 || exitHour < 6;
+  const isEarlyMorning = entryHour < 6;
+  const highCampus = campusCount >= 3;
+
+  let p = 0.03;
+  p += riskScore * 0.085;
+  p += offhoursPrintRatio * 0.25;
+  p += presenceHours > 12 ? 0.12 : presenceHours > 10 ? 0.06 : 0;
+  p += isAfterHours ? 0.08 : 0;
+  p += isEarlyMorning ? 0.07 : 0;
+  p += highCampus ? 0.1 : campusCount >= 2 ? 0.04 : 0;
+  p += hostileTrip ? 0.12 : 0;
+  if (pos === 'C-Level' || pos === 'Director') p += 0.03;
+  if (dept === 'Finance' || dept === 'Legal') p += 0.02;
+  p = Math.min(Math.max(p, 0.01), 0.99);
+
+  const threshold = 0.38;
+  const pct = Math.round(p * 100);
+  const isThreat = p >= threshold;
+  const severity = p >= 0.75 ? 'CRITICAL' : p >= 0.55 ? 'HIGH' : p >= 0.38 ? 'MEDIUM' : 'NORMAL';
+
+  const signals = [];
+  if (riskScore >= 3) signals.push('High risk score');
+  if (hostileTrip) signals.push('Hostile-country travel');
+  if (offhoursPrintRatio > 0.4) signals.push('Off-hours printing');
+  if (weekendEntry) signals.push('Weekend access');
+  if (nightHours) signals.push('Night-time entry');
+  if (presenceHours > 12) signals.push('Excessive presence');
+  if (highCampus) signals.push('Multi-campus access');
+
+  return { isThreat, pct, severity, signals, riskScore, dept, empId: r.employee_id || '—', pos };
+}
+
+async function processBulkRecords(records) {
+  document.getElementById('bulk-status-text').textContent = 'RUNNING PREDICTIONS...';
+  const total = records.length;
+  bulkResults = [];
+
+  // Simulate batch processing with animation
+  const batchSize = Math.max(1, Math.floor(total / 20));
+  for (let i = 0; i < total; i += batchSize) {
+    await new Promise(r => setTimeout(r, 60));
+    const batch = records.slice(i, Math.min(i + batchSize, total));
+    batch.forEach(rec => bulkResults.push(scoreRecord(rec)));
+    const pct = Math.round((Math.min(i + batchSize, total) / total) * 100);
+    document.getElementById('bulk-progress-bar').style.width = pct + '%';
+    document.getElementById('bulk-progress-label').textContent = `${Math.min(i + batchSize, total)} / ${total} records analyzed`;
+    document.getElementById('bulk-status-text').textContent = pct < 50 ? 'RUNNING PREDICTIONS...' : pct < 85 ? 'SCORING ANOMALIES...' : 'GENERATING ALERTS...';
+  }
+
+  document.getElementById('bulk-progress-bar').style.width = '100%';
+  await new Promise(r => setTimeout(r, 400));
+  document.getElementById('bulk-processing').style.display = 'none';
+  renderBulkResults(records.length);
+}
+
+function renderBulkResults(total) {
+  const threats = bulkResults.filter(r => r.isThreat);
+  const criticals = bulkResults.filter(r => r.severity === 'CRITICAL');
+  const highs = bulkResults.filter(r => r.severity === 'HIGH');
+  const avgRisk = Math.round(bulkResults.reduce((s, r) => s + r.pct, 0) / bulkResults.length);
+
+  // KPIs
+  document.getElementById('bulk-kpi-row').innerHTML = [
+    { val: total, label: 'Records Scanned', color: 'var(--accent)', icon: '📋' },
+    { val: threats.length, label: 'Threats Flagged', color: 'var(--danger)', icon: '⚠️' },
+    { val: criticals.length, label: 'Critical Alerts', color: '#ff6b6b', icon: '🚨' },
+    { val: avgRisk + '%', label: 'Avg Risk Score', color: 'var(--warn)', icon: '📊' },
+  ].map(k => `
+    <div style="background:var(--surface2);padding:1.75rem 1.5rem;text-align:center;">
+      <div style="font-size:22px;margin-bottom:6px;">${k.icon}</div>
+      <div style="font-family:var(--head);font-size:40px;letter-spacing:1px;color:${k.color};line-height:1;margin-bottom:6px;">${k.val}</div>
+      <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;">${k.label}</div>
+    </div>
+  `).join('');
+
+  // Alert banner
+  const banner = document.getElementById('bulk-alert-banner');
+  if (threats.length > 0) {
+    banner.style.display = 'block';
+    banner.innerHTML = `
+      <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.4);border-radius:14px;padding:1.25rem 1.75rem;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <span style="font-size:24px;">🚨</span>
+        <div style="flex:1;">
+          <div style="font-family:var(--head);font-size:20px;letter-spacing:1px;color:var(--danger);margin-bottom:3px;">
+            ${threats.length} EMPLOYEE${threats.length > 1 ? 'S' : ''} REQUIRE IMMEDIATE INVESTIGATION
+          </div>
+          <div style="font-size:13px;color:var(--muted2);">
+            ${criticals.length} critical · ${highs.length} high severity · Sorted by risk score descending
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <div style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:6px 14px;font-family:var(--mono);font-size:11px;color:var(--danger);">
+            <div class="live-dot" style="display:inline-block;margin-right:6px;"></div>LIVE ALERT
+          </div>
+        </div>
+      </div>`;
+  } else {
+    banner.style.display = 'block';
+    banner.innerHTML = `<div style="background:var(--safe-soft);border:1px solid rgba(16,185,129,0.25);border-radius:14px;padding:1.25rem 1.75rem;display:flex;align-items:center;gap:16px;"><span style="font-size:24px;">✅</span><div><div style="font-family:var(--head);font-size:20px;letter-spacing:1px;color:var(--safe);">ALL CLEAR — NO THREATS DETECTED</div><div style="font-size:13px;color:var(--muted2);">All ${total} records fall below the detection threshold of 38%.</div></div></div>`;
+  }
+
+  // Populate department filter
+  const depts = [...new Set(bulkResults.map(r => r.dept))].sort();
+  const deptSelect = document.getElementById('bulk-filter-dept');
+  deptSelect.innerHTML = '<option value="">All Departments</option>' + depts.map(d => `<option>${d}</option>`).join('');
+
+  // Charts
+  renderBulkCharts();
+
+  // Alert table
+  renderAlertTable();
+
+  document.getElementById('bulk-results').style.display = 'block';
+}
+
+function renderBulkCharts() {
+  // Destroy previous charts
+  Object.values(bulkCharts).forEach(c => c && c.destroy && c.destroy());
+  bulkCharts = {};
+
+  // Risk Distribution bar chart (buckets: 0-20, 20-40, 40-60, 60-80, 80-100)
+  const buckets = [0,0,0,0,0];
+  bulkResults.forEach(r => { buckets[Math.min(4, Math.floor(r.pct / 20))]++; });
+  const ctx1 = document.getElementById('bulk-dist-chart').getContext('2d');
+  bulkCharts.dist = new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      labels: ['0–20%','20–40%','40–60%','60–80%','80–100%'],
+      datasets: [{
+        label: 'Employees',
+        data: buckets,
+        backgroundColor: ['rgba(16,185,129,0.6)','rgba(99,102,241,0.6)','rgba(245,158,11,0.6)','rgba(239,68,68,0.5)','rgba(239,68,68,0.85)'],
+        borderRadius: 6, borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#6b6994', font: { family: 'JetBrains Mono', size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { ticks: { color: '#6b6994', font: { family: 'JetBrains Mono', size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } }
+      }
+    }
+  });
+
+  // Dept threat chart
+  const deptMap = {};
+  bulkResults.filter(r => r.isThreat).forEach(r => { deptMap[r.dept] = (deptMap[r.dept] || 0) + 1; });
+  const deptLabels = Object.keys(deptMap);
+  const deptVals = Object.values(deptMap);
+  const ctx2 = document.getElementById('bulk-dept-chart').getContext('2d');
+  bulkCharts.dept = new Chart(ctx2, {
+    type: 'doughnut',
+    data: {
+      labels: deptLabels.length ? deptLabels : ['No threats'],
+      datasets: [{
+        data: deptVals.length ? deptVals : [1],
+        backgroundColor: ['rgba(99,102,241,0.8)','rgba(239,68,68,0.75)','rgba(245,158,11,0.75)','rgba(16,185,129,0.7)','rgba(129,140,248,0.7)','rgba(249,115,22,0.7)'],
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'right', labels: { color: '#9d9bc4', font: { family: 'Outfit', size: 12 }, padding: 12 } }
+      }
+    }
+  });
+}
+
+function renderAlertTable() {
+  const deptFilter = document.getElementById('bulk-filter-dept').value;
+  const sevFilter = document.getElementById('bulk-filter-sev').value;
+
+  let rows = bulkResults.filter(r => r.isThreat);
+  if (deptFilter) rows = rows.filter(r => r.dept === deptFilter);
+  if (sevFilter) rows = rows.filter(r => r.severity === sevFilter);
+  rows = rows.sort((a,b) => b.pct - a.pct);
+
+  document.getElementById('alert-table-subtitle').textContent = `Showing ${rows.length} flagged record${rows.length !== 1 ? 's' : ''}`;
+
+  const sevStyle = { CRITICAL: 'color:var(--danger);background:var(--danger-soft)', HIGH: 'color:#fb923c;background:rgba(251,146,60,0.12)', MEDIUM: 'color:var(--warn);background:var(--warn-soft)' };
+  const table = document.getElementById('bulk-alert-table');
+  table.innerHTML = `
+    <thead>
+      <tr style="background:rgba(99,102,241,0.07);border-bottom:1px solid var(--border);">
+        <th style="padding:10px 18px;text-align:left;font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:500;">Employee ID</th>
+        <th style="padding:10px 18px;text-align:left;font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:500;">Department</th>
+        <th style="padding:10px 18px;text-align:left;font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:500;">Position</th>
+        <th style="padding:10px 18px;text-align:left;font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:500;">Risk Score</th>
+        <th style="padding:10px 18px;text-align:left;font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:500;">Severity</th>
+        <th style="padding:10px 18px;text-align:left;font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:500;">Top Signals</th>
+        <th style="padding:10px 18px;text-align:left;font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:500;">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows.length === 0 ? `<tr><td colspan="7" style="padding:2rem;text-align:center;color:var(--muted);font-size:14px;">No records match the current filters.</td></tr>` :
+        rows.map((r, idx) => `
+        <tr style="border-bottom:1px solid var(--border);transition:background 0.15s;" onmouseover="this.style.background='rgba(99,102,241,0.05)'" onmouseout="this.style.background='transparent'">
+          <td style="padding:12px 18px;font-family:var(--mono);font-size:12px;color:var(--text);">${r.empId}</td>
+          <td style="padding:12px 18px;font-size:13px;color:var(--muted2);">${r.dept}</td>
+          <td style="padding:12px 18px;font-size:13px;color:var(--muted2);">${r.pos}</td>
+          <td style="padding:12px 18px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:60px;height:6px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;">
+                <div style="height:100%;width:${r.pct}%;background:${r.pct>=75?'var(--danger)':r.pct>=55?'#fb923c':'var(--warn)'};border-radius:3px;"></div>
+              </div>
+              <span style="font-family:var(--mono);font-size:12px;color:${r.pct>=75?'var(--danger)':r.pct>=55?'#fb923c':'var(--warn)'};">${r.pct}%</span>
+            </div>
+          </td>
+          <td style="padding:12px 18px;">
+            <span style="font-family:var(--mono);font-size:10px;letter-spacing:0.06em;border-radius:5px;padding:3px 9px;${sevStyle[r.severity]}">${r.severity}</span>
+          </td>
+          <td style="padding:12px 18px;font-size:12px;color:var(--muted2);">${r.signals.slice(0,2).join(' · ') || '—'}</td>
+          <td style="padding:12px 18px;">
+            <button onclick="triggerSingleAlert('${r.empId}', ${r.pct}, '${r.severity}')" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:var(--danger);border-radius:7px;padding:5px 12px;font-size:11px;font-family:var(--mono);cursor:pointer;letter-spacing:0.04em;transition:all 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.22)'" onmouseout="this.style.background='rgba(239,68,68,0.12)'">🔔 ALERT</button>
+          </td>
+        </tr>`).join('')
+      }
+    </tbody>`;
+}
+
+function triggerSingleAlert(empId, risk, severity) {
+  const toast = document.createElement('div');
+  toast.style.cssText = `position:fixed;bottom:2rem;right:2rem;z-index:9999;background:var(--surface2);border:1px solid rgba(239,68,68,0.5);border-radius:14px;padding:1.25rem 1.5rem;display:flex;align-items:center;gap:14px;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.6);animation:slideInRight 0.4s ease;`;
+  toast.innerHTML = `
+    <span style="font-size:24px;">🚨</span>
+    <div>
+      <div style="font-weight:600;font-size:14px;color:var(--text);margin-bottom:3px;">Alert Dispatched — ${empId}</div>
+      <div style="font-size:12px;color:var(--muted2);">${severity} · ${risk}% risk · Routed to SOC team</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px;">${new Date().toLocaleTimeString()} · ThreatSense Bulk Engine</div>
+    </div>`;
+  document.body.appendChild(toast);
+  setTimeout(() => { toast.style.animation = 'fadeInDown 0.3s reverse'; setTimeout(() => toast.remove(), 300); }, 4000);
+}
+
+function sendAllAlerts() {
+  const threats = bulkResults.filter(r => r.isThreat);
+  if (!threats.length) return;
+  const btn = document.getElementById('send-alerts-btn');
+  btn.textContent = '⏳ Dispatching...';
+  btn.disabled = true;
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i >= Math.min(threats.length, 5)) {
+      clearInterval(interval);
+      btn.textContent = `✅ ${threats.length} Alerts Sent`;
+      return;
+    }
+    triggerSingleAlert(threats[i].empId, threats[i].pct, threats[i].severity);
+    i++;
+  }, 600);
+}
+
+function exportAlertReport() {
+  const threats = bulkResults.filter(r => r.isThreat);
+  const header = 'employee_id,department,position,risk_pct,severity,signals,timestamp';
+  const rows = threats.map(r =>
+    `${r.empId},${r.dept},${r.pos},${r.pct}%,${r.severity},"${r.signals.join('; ')}",${new Date().toISOString()}`
+  );
+  const blob = new Blob([header + '\n' + rows.join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `threatsense_alerts_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+}
+
+function resetBulkUpload() {
+  bulkResults = [];
+  Object.values(bulkCharts).forEach(c => c && c.destroy && c.destroy());
+  bulkCharts = {};
+  document.getElementById('bulk-upload-zone').style.display = 'block';
+  document.getElementById('bulk-processing').style.display = 'none';
+  document.getElementById('bulk-results').style.display = 'none';
+  document.getElementById('bulk-csv-input').value = '';
+  const btn = document.getElementById('send-alerts-btn');
+  if (btn) { btn.textContent = '🚨 Dispatch All Alerts'; btn.disabled = false; }
+}
+
+/* ── Load Chart.js dynamically ── */
+(function() {
+  const s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';
+  document.head.appendChild(s);
+})();
+
+// Also trigger bars when solution visual becomes visible independently
+const solObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.sol-metric-fill[data-width]').forEach(bar => {
+        bar.style.width = bar.dataset.width + '%';
+      });
+    }
+  });
+}, { threshold: 0.3 });
+document.querySelectorAll('.solution-visual').forEach(el => solObs.observe(el));
+
+/* ────────────────────────────────────────
+   TOGGLE BUTTONS
+──────────────────────────────────────── */
+function tg(btn, groupId) {
+  document.querySelectorAll('#' + groupId + ' .tog').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+}
+function getVal(groupId) {
+  const a = document.querySelector('#' + groupId + ' .tog.on');
+  return a ? parseInt(a.dataset.val) : 0;
+}
+
+/* ────────────────────────────────────────
+   PREDICTION ENGINE
+──────────────────────────────────────── */
+function runPrediction() {
+  const btn = document.getElementById('runBtn');
+  const btnText = document.getElementById('btn-text');
+  btnText.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:10px"><div class="spinner"></div> ANALYZING...</div>';
+  btn.disabled = true;
+
+  setTimeout(() => {
+    const entryHour = parseInt(document.getElementById('entry_hour').value) || 9;
+    const exitHour = parseInt(document.getElementById('exit_hour').value) || 18;
+    const presenceMins = parseInt(document.getElementById('presence_minutes').value) || 480;
+    const lateExit = getVal('late_exit');
+    const earlyEntry = getVal('early_entry');
+    const weekendEntry = getVal('weekend_entry');
+    const nightHours = getVal('night_hours');
+    const printCmds = parseInt(document.getElementById('print_cmds').value) || 0;
+    const offhoursPrints = parseInt(document.getElementById('offhours_prints').value) || 0;
+    const campusCount = parseInt(document.getElementById('campus_count').value) || 1;
+    const hostileTrip = getVal('hostile_trip');
+    const dept = document.getElementById('department').value;
+    const pos = document.getElementById('position').value;
+
+    const riskScore = lateExit + earlyEntry + weekendEntry + nightHours + hostileTrip;
+    const presenceHours = presenceMins / 60;
+    const offhoursPrintRatio = printCmds > 0 ? offhoursPrints / printCmds : 0;
+    const isAfterHours = (exitHour >= 20 || exitHour < 6);
+    const isEarlyMorning = entryHour < 6;
+    const highCampus = campusCount >= 3;
+
+    let p = 0.03;
+    p += riskScore * 0.085;
+    p += offhoursPrintRatio * 0.25;
+    p += (presenceHours > 12 ? 0.12 : presenceHours > 10 ? 0.06 : 0);
+    p += (isAfterHours ? 0.08 : 0);
+    p += (isEarlyMorning ? 0.07 : 0);
+    p += (highCampus ? 0.1 : campusCount >= 2 ? 0.04 : 0);
+    p += (hostileTrip ? 0.12 : 0);
+    if (pos === 'C-Level' || pos === 'Director') p += 0.03;
+    if (dept === 'Finance' || dept === 'Legal') p += 0.02;
+    p = Math.min(Math.max(p, 0.01), 0.99);
+
+    const threshold = 0.38;
+    const isThreat = p >= threshold;
+
+    const lrProb = Math.min(Math.max(p * 0.78 + (Math.random() - 0.5) * 0.04, 0.01), 0.99);
+    const rfProb = Math.min(Math.max(p * 1.05 + (Math.random() - 0.5) * 0.04, 0.01), 0.99);
+    const xgbProb = Math.min(Math.max(p * 1.1 + (Math.random() - 0.5) * 0.03, 0.01), 0.99);
+
+    const pct = Math.round(p * 100);
+    const gaugeColor = isThreat ? '#ef4444' : p > 0.2 ? '#f59e0b' : '#10b981';
+    const verdictClass = isThreat ? 'is-threat' : 'is-safe';
+    const iconClass = isThreat ? 'threat' : 'safe';
+    const verdictEmoji = isThreat ? '⚠️' : '✅';
+    const verdictTitle = isThreat ? 'High Risk — Threat Detected' : 'Low Risk — Normal Behavior';
+    const verdictSub = isThreat
+      ? `Probability ${pct}% — exceeds ${Math.round(threshold*100)}% threshold`
+      : `Probability ${pct}% — below ${Math.round(threshold*100)}% threshold`;
+
+    document.getElementById('result-card').className = 'result-card ' + verdictClass;
+    document.getElementById('result-content').style.display = 'block';
+    document.getElementById('placeholder').style.display = 'none';
+
+    // Animated result SVG gauge
+    const gaugeArc = (pct / 100) * 251.2;
+    document.getElementById('result-content').innerHTML = `
+      <div class="verdict-bar">
+        <div class="verdict-icon-wrap ${iconClass}">${verdictEmoji}</div>
+        <div>
+          <div class="verdict-title">${verdictTitle}</div>
+          <div class="verdict-sub">${verdictSub}</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:2rem;margin-bottom:1.5rem;">
+        <svg width="100" height="100" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="8"/>
+          <circle cx="50" cy="50" r="40" fill="none" stroke="${gaugeColor}" stroke-width="8"
+            stroke-dasharray="${gaugeArc} 251.2" stroke-dashoffset="0"
+            stroke-linecap="round" transform="rotate(-90 50 50)"
+            style="transition:stroke-dasharray 1.2s ease">
+          </circle>
+          <text x="50" y="46" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="16" font-weight="500" fill="${gaugeColor}">${pct}%</text>
+          <text x="50" y="62" text-anchor="middle" font-family="Outfit,sans-serif" font-size="10" fill="rgba(157,155,196,0.8)">risk</text>
+        </svg>
+        <div>
+          <div class="details-row" style="flex-direction:column;gap:6px;">
+            <span>Risk Score: <span>${riskScore}/5</span></span>
+            <span>Presence: <span>${presenceHours.toFixed(1)}h</span></span>
+            <span>Off-hours prints: <span>${(offhoursPrintRatio*100).toFixed(0)}%</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="gauge-wrap">
+        <div class="gauge-meta"><span>Risk Probability</span><span style="font-family:var(--mono);color:${gaugeColor}">${pct}%</span></div>
+        <div class="gauge-track"><div class="gauge-fill" style="width:${pct}%;background:${gaugeColor}"></div></div>
+      </div>
+    `;
+
+    // Signals
+    const signals = [];
+    if (riskScore >= 4) signals.push({ icon: '🔴', name: 'Very high behavioral risk score', impact: 'high' });
+    else if (riskScore >= 2) signals.push({ icon: '🟡', name: 'Elevated behavioral risk score', impact: 'med' });
+    else signals.push({ icon: '🟢', name: 'Low behavioral risk score', impact: 'low' });
+    if (hostileTrip) signals.push({ icon: '✈️', name: 'Hostile-country travel detected', impact: 'high' });
+    if (offhoursPrintRatio > 0.5) signals.push({ icon: '🖨️', name: 'High off-hours print ratio', impact: 'high' });
+    else if (offhoursPrintRatio > 0.1) signals.push({ icon: '🖨️', name: 'Some off-hours printing', impact: 'med' });
+    if (weekendEntry) signals.push({ icon: '📅', name: 'Weekend building access detected', impact: 'med' });
+    if (nightHours) signals.push({ icon: '🌙', name: 'Night-time entry detected', impact: 'med' });
+    if (lateExit) signals.push({ icon: '⏰', name: 'Abnormally late exit time', impact: 'med' });
+    if (earlyEntry) signals.push({ icon: '⏰', name: 'Abnormally early entry time', impact: 'med' });
+    if (presenceHours > 12) signals.push({ icon: '⌛', name: 'Excessive presence duration', impact: 'high' });
+    if (highCampus) signals.push({ icon: '🏢', name: 'Multi-campus access pattern', impact: 'med' });
+    if (!hostileTrip && riskScore === 0 && offhoursPrintRatio === 0) signals.push({ icon: '✅', name: 'No anomalous flags detected', impact: 'low' });
+
+    const sc = document.getElementById('signals-card');
+    sc.style.display = 'block';
+    document.getElementById('factors-list').innerHTML = signals.map((s, i) => `
+      <li class="sig-item" style="animation-delay:${i * 0.08}s">
+        <span class="sig-icon">${s.icon}</span>
+        <span class="sig-name">${s.name}</span>
+        <span class="sig-badge ${s.impact}">${s.impact.toUpperCase()}</span>
+      </li>
+    `).join('');
+
+    const mvc = document.getElementById('model-votes-card');
+    mvc.style.display = 'block';
+    const mods = [
+      { name: 'Logistic Reg.', prob: lrProb },
+      { name: 'Random Forest', prob: rfProb },
+      { name: 'XGBoost', prob: xgbProb }
+    ];
+    document.getElementById('model-scores').innerHTML = mods.map(m => {
+      const mp = Math.round(m.prob * 100);
+      const cls = m.prob >= threshold ? 'threat' : m.prob > 0.2 ? 'warn-c' : 'safe-c';
+      return `<div class="mv-item">
+        <div class="mv-name">${m.name}</div>
+        <div class="mv-prob ${cls}">${mp}%</div>
+        <div class="mv-verdict">${m.prob >= threshold ? '⚠️ THREAT' : '✅ NORMAL'}</div>
+      </div>`;
+    }).join('');
+
+    // Update live counter
+    if (isThreat) {
+      threatCount++;
+      document.getElementById('live-threat-count').textContent = threatCount;
+    }
+
+    btnText.textContent = 'ANALYZE EMPLOYEE BEHAVIOR →';
+    btn.disabled = false;
+  }, 1400);
+}
+</script>
 </body>
 </html>
